@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732" width="2732" height="2732">
+  <!-- Dark background matching app theme -->
+  <rect width="2732" height="2732" fill="#0d0c0a"/>
+  <!-- Orange brand mark square -->
+  <rect x="1216" y="966" width="300" height="300" rx="48" fill="#FF6B35"/>
+  <!-- Brand text: SWIPE -->
+  <text x="1366" y="1520" font-family="Arial Black, sans-serif" font-size="220" font-weight="900"
+        text-anchor="middle" fill="#FFFFFF" letter-spacing="8">SWIPE</text>
+  <!-- Brand text: HIRE in orange -->
+  <text x="1366" y="1740" font-family="Arial Black, sans-serif" font-size="220" font-weight="900"
+        text-anchor="middle" fill="#FF6B35" letter-spacing="8">HIRE</text>
+  <!-- .mn sub-label -->
+  <text x="1366" y="1860" font-family="Arial, sans-serif" font-size="100" font-weight="600"
+        text-anchor="middle" fill="#6b685f" letter-spacing="4">.mn</text>
+</svg>

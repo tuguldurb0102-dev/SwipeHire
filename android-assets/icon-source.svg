@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Background -->
+  <rect width="1024" height="1024" rx="200" fill="#0d0c0a"/>
+  <!-- Orange square mark (brand mark) -->
+  <rect x="200" y="200" width="160" height="160" rx="24" fill="#FF6B35"/>
+  <!-- S letter -->
+  <text x="512" y="580" font-family="Arial Black, sans-serif" font-size="420" font-weight="900"
+        text-anchor="middle" fill="#FFFFFF" letter-spacing="-20">SH</text>
+  <!-- .mn badge -->
+  <rect x="620" y="700" width="200" height="64" rx="16" fill="#FF6B35"/>
+  <text x="720" y="745" font-family="Arial, sans-serif" font-size="38" font-weight="700"
+        text-anchor="middle" fill="#FFFFFF">.mn</text>
+</svg>
