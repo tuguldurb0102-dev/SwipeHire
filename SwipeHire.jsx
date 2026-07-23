@@ -3553,6 +3553,16 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
             <Sparkles size={16} color="#FF6B35" />
             <span style={{ fontWeight:700, fontSize:13, color:"#FF6B35" }}>Gemini AI Summary — тест</span>
           </div>
+
+          {/* Third-party processing disclosure — the candidate's data leaves the device */}
+          <div style={{ background:"rgba(255,210,63,0.07)", border:"1px solid rgba(255,210,63,0.22)", borderRadius:10, padding:"9px 11px", marginBottom:10 }}>
+            <p style={{ margin:0, fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.5 }}>
+              ⚠️ Энэ үйлдэл нэр дэвшигчийн <b style={{ color:"rgba(255,255,255,0.82)" }}>нэр, нас, мэргэжил, туршлага, танилцуулгыг</b> хураангуй
+              үүсгэх зорилгоор гуравдагч талын AI үйлчилгээ рүү илгээнэ. Зөвхөн ажилд авах
+              зорилгоор ашиглана уу.
+            </p>
+          </div>
+
           <button
             onClick={runAiSummary}
             disabled={aiTest === "loading"}
@@ -4139,13 +4149,21 @@ function IdVerifySheet({ onClose, onVerified }) {
 
             </div>
 
-            <h3 style={{ margin: "0 0 8px", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 22, fontWeight: 700 }}>Хүлээгдэж байна</h3>
+            <h3 style={{ margin: "0 0 8px", fontFamily: "'Barlow Condensed',sans-serif", fontSize: 22, fontWeight: 700 }}>Туршилтын горим</h3>
 
-            <p style={{ margin: "0 0 20px", color: "var(--dim)", fontSize: 13, lineHeight: 1.5 }}>
+            <p style={{ margin: "0 0 14px", color: "var(--dim)", fontSize: 13, lineHeight: 1.55 }}>
 
-              Таны иргэний үнэмлэх 24 цагийн дотор шалгагдаж баталгаажна.
+              Иргэний үнэмлэхийн баталгаажуулалт <b style={{ color: "#FFD23F" }}>одоогоор идэвхгүй</b> байна.
+              Таны баримт бичиг <b style={{ color: "#FFD23F" }}>хаашаа ч илгээгдээгүй</b> бөгөөд энэ төхөөрөмжөөс гараагүй.
 
             </p>
+
+            <div style={{ background: "rgba(255,210,63,0.08)", border: "1px solid rgba(255,210,63,0.25)", borderRadius: 12, padding: "10px 12px", marginBottom: 18 }}>
+              <p style={{ margin: 0, fontSize: 11.5, color: "var(--dim)", lineHeight: 1.5, textAlign: "left" }}>
+                Тэмдэг нь <b>зөвхөн үзүүлэн зорилготой</b> бөгөөд бодит баталгаажуулалт биш.
+                Албан ёсны баталгаажуулалт нэвтэрмэгц танд мэдэгдэнэ.
+              </p>
+            </div>
 
             <button className="wiz__btn" onClick={() => { onVerified(); onClose(); }}
 
@@ -5211,15 +5229,38 @@ function SwipeHireLogo({ size = 34, onClick, style = {} }) {
 
 /* ── Seeker Intro Screen ─────────────────────────── */
 
+/* Consent checkbox — module scope so React keeps the same component type
+   across renders and the checked state is not lost on re-render. */
+function ConsentCheck({ on, onToggle, children }) {
+  return (
+    <label onClick={onToggle} style={{ display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", padding: "2px 0" }}>
+      <span style={{
+        width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+        border: `1.5px solid ${on ? "#FF6B35" : "rgba(255,255,255,0.28)"}`,
+        background: on ? "#FF6B35" : "transparent",
+        display: "grid", placeItems: "center", color: "#fff", fontSize: 12, fontWeight: 900,
+        transition: "all 150ms",
+      }}>{on ? "✓" : ""}</span>
+      <span style={{ fontSize: 12, color: "rgba(240,237,230,0.72)", lineHeight: 1.5 }}>{children}</span>
+    </label>
+  );
+}
+
 function SeekerIntroScreen({ onStart, onDemo, onBack }) {
   const { lang } = useLang();
   const L = (mn, en) => lang === "en" || lang === "ko" ? en : mn;
+
+  // Consent must be given before any personal data is collected.
+  const [agreed, setAgreed] = useState(false);
+  const [ageOk, setAgeOk]   = useState(false);
+  const canStart = agreed && ageOk;
 
   const cards = [
     { icon: "🎬", text: L("30 секундийн Video CV", "30-second Video CV") },
     { icon: "🏅", text: L("Talent Passport үүсгэнэ", "Build your Talent Passport") },
     { icon: "🤖", text: L("Ажил олгогч таныг AI Match-аар олно", "Employers find you via AI Match") },
   ];
+
 
   return (
     <div style={{ minHeight: "100dvh", background: "#0d0c0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", boxSizing: "border-box" }}>
@@ -5248,7 +5289,33 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
 
       {/* Buttons */}
       <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 360 }}>
-        <button onClick={onStart} style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#FF6B35,#e8542a)", color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer" }}>
+        {/* Consent gate — collected before any personal data is entered */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14, padding: "13px 14px", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}>
+          <ConsentCheck on={ageOk} onToggle={() => setAgeOk(v => !v)}>
+            {L("Би 16 нас хүрсэн.", "I am at least 16 years old.")}
+          </ConsentCheck>
+          <ConsentCheck on={agreed} onToggle={() => setAgreed(v => !v)}>
+            {L("Би ", "I accept the ")}
+            <a href="/legal/terms-of-service.md" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: "#FF6B35", fontWeight: 700 }}>
+              {L("Үйлчилгээний нөхцөл", "Terms of Service")}
+            </a>
+            {L(", ", " and ")}
+            <a href="/legal/privacy-policy.md" target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} style={{ color: "#FF6B35", fontWeight: 700 }}>
+              {L("Нууцлалын бодлого", "Privacy Policy")}
+            </a>
+            {L("-той танилцаж, профайл, видео CV, баримт бичгээ ажил олгогчид харуулахыг зөвшөөрч байна.",
+               ", and consent to my profile, video CV and documents being shown to employers.")}
+          </ConsentCheck>
+        </div>
+
+        <button
+          onClick={() => canStart && onStart()}
+          disabled={!canStart}
+          title={canStart ? undefined : L("Эхлэхийн тулд зөвшөөрнө үү", "Please accept to continue")}
+          style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none",
+            background: canStart ? "linear-gradient(135deg,#FF6B35,#e8542a)" : "rgba(255,107,53,0.28)",
+            color: canStart ? "#fff" : "rgba(255,255,255,0.5)", fontWeight: 800, fontSize: 16,
+            cursor: canStart ? "pointer" : "not-allowed", transition: "all 180ms" }}>
           {L("Бүртгэл эхлүүлэх", "Get Started")}
         </button>
         <button onClick={onDemo} style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "rgba(240,237,230,0.7)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
@@ -7673,7 +7740,10 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
   const stepValid = (n) => {
 
-    if (n === 1) return f.name && f.age && f.gender && f.category && f.location && f.phone;
+    // Gender is deliberately NOT required: it is a discrimination-sensitive
+    // attribute, is never used in match scoring, and employers do not need it
+    // to assess suitability for a role.
+    if (n === 1) return f.name && f.age && f.category && f.location && f.phone;
 
     if (n === 2) return f.about.trim().length > 10;
 
@@ -7701,7 +7771,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
     if (!stepValid(step)) {
       const msgs = [
-        "Нэр, нас, хүйс, мэргэжил, байршил, утасны дугаараа бөглөнө үү",
+        "Нэр, нас, мэргэжил, байршил, утасны дугаараа бөглөнө үү",
         "Өөрийнхөө тухай 10-аас дээш үсэгтэй тайлбар бичнэ үү",
         "Хамгийн багадаа нэг ажлын туршлага нэмнэ үү",
         "Боловсролын мэдээлэлээ нэмнэ үү",
@@ -8290,7 +8360,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
                 </Field>
 
-                <Field label="Хүйс">
+                <Field label="Хүйс (заавал бус)">
 
                   <div className="pills">
 
