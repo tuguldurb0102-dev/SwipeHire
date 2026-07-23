@@ -11450,6 +11450,144 @@ function SimpleRow({ label, value }) {
 
 
 
+/* ── Employer Profile (glassmorphism · black + orange) ───────── */
+function EmployerProfilePanel({
+  data, verified, subscribed, lang, logoInputRef, onLogoPick,
+  onEditInfo, onOpenFinance, onOpenInsights, onUpgrade, onLogout, onReset,
+}) {
+  const L = (mn, en, ko) => lang === "en" ? en : lang === "ko" ? ko : mn;
+  const d = data || {};
+  const trust = TRUST_LEVELS[d.trustLevel] || null;
+
+  const rows = [
+    { ic: "🏢", k: L("Компанийн нэр", "Company", "회사"),          v: d.name },
+    { ic: "🔢", k: L("Бүртгэлийн дугаар", "Reg number", "등록번호"), v: d.regNum },
+    { ic: "✉️", k: L("Имэйл", "Email", "이메일"),                   v: d.email },
+    { ic: "📞", k: L("Утас", "Phone", "전화"),                      v: d.phone },
+    { ic: "👤", k: L("HR холбогч", "HR contact", "HR 담당자"),      v: d.hrName },
+    { ic: "🌐", k: L("Вэбсайт", "Website", "웹사이트"),              v: d.website },
+    { ic: "💼", k: L("Салбар", "Industry", "산업"),                 v: d.industry },
+    { ic: "👥", k: L("Ажилтны тоо", "Headcount", "직원 수"),         v: d.headcount },
+  ].filter(r => r.v);
+
+  const salary = (d.salaryMin || d.salaryMax)
+    ? `₮${Number(d.salaryMin || 0).toLocaleString()} – ₮${Number(d.salaryMax || 0).toLocaleString()}`
+    : null;
+
+  const tiles = [
+    { ic: "💰", g: "linear-gradient(140deg,#FFB03D,#FF6B35)", t: L("Санхүү", "Finance", "재무"), s: subscribed ? "PRO" : L("Үнэгүй", "Free", "무료"), on: onOpenFinance },
+    { ic: "✏️", g: "linear-gradient(140deg,#FF8A3D,#E85400)", t: L("Мэдээлэл засах", "Edit info", "정보 수정"), s: L("Профайл", "Profile", "프로필"), on: onEditInfo },
+    { ic: "📊", g: "linear-gradient(140deg,#B488FF,#7C4DFF)", t: L("Ойлголт", "Insights", "인사이트"), s: "PRO", on: onOpenInsights },
+  ];
+
+  return (
+    <div className="gp">
+
+      <div className="gcard gp__hero">
+        <div className="gp__ava">
+          {d.logo ? <img src={d.logo} alt="" /> : <span style={{ fontSize: 40 }}>🏢</span>}
+          <button className="gp__edit" onClick={() => logoInputRef?.current?.click()} aria-label="Upload logo">✎</button>
+          <input ref={logoInputRef} type="file" accept="image/*" onChange={onLogoPick} style={{ display: "none" }} />
+        </div>
+
+        <div className="gp__name">{d.name || L("Компани", "Company", "회사")}</div>
+
+        <div className="gp__badge" style={{
+          background: verified ? "rgba(61,220,151,.13)" : "rgba(255,210,63,.13)",
+          border: `1px solid ${verified ? "rgba(61,220,151,.35)" : "rgba(255,210,63,.35)"}`,
+          color: verified ? "#3DDC97" : "#FFD23F",
+        }}>
+          {verified ? "✓ " : "● "}
+          {verified ? L("Баталгаажсан", "Verified", "인증됨") : L("Хянагдаж байна", "Pending review", "검토 중")}
+          {trust && verified ? ` · ${L(trust.label.mn, trust.label.en, trust.label.ko)}` : ""}
+        </div>
+
+        {!subscribed && (
+          <button onClick={onUpgrade} style={{
+            marginTop: 16, width: "100%", padding: "13px", borderRadius: 15, border: "none",
+            background: "linear-gradient(135deg,#FF8A3D,#E85400)", color: "#fff",
+            fontWeight: 800, fontSize: 14.5, cursor: "pointer",
+            boxShadow: "0 8px 22px rgba(255,107,53,.38)",
+          }}>👑 {L("PRO болох", "Go PRO", "PRO 시작")}</button>
+        )}
+      </div>
+
+      <div className="gp__lbl">{L("Хурдан үйлдэл", "Quick actions", "빠른 작업")}</div>
+      <div className="ggrid">
+        {tiles.map((t, i) => (
+          <div key={i} className="gtile" onClick={t.on}>
+            <div className="gtile__ic" style={{ background: t.g }}>{t.ic}</div>
+            <div className="gtile__t">{t.t}</div>
+            <div className="gtile__s">{t.s}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="gp__lbl">{L("Компанийн мэдээлэл", "Company details", "회사 정보")}</div>
+      <div className="gcard" style={{ overflow: "hidden" }}>
+        {rows.length ? rows.map((r, i) => (
+          <div className="grow" key={i}>
+            <div className="grow__ic">{r.ic}</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="grow__k">{r.k}</div>
+              <div className="grow__v">{r.v}</div>
+            </div>
+          </div>
+        )) : (
+          <div style={{ padding: 20, textAlign: "center", color: "rgba(255,255,255,.45)", fontSize: 13 }}>
+            {L("Мэдээлэл бөглөөгүй байна", "No details yet", "정보 없음")}
+          </div>
+        )}
+      </div>
+
+      {(salary || (d.selectedProfs?.length)) && (
+        <>
+          <div className="gp__lbl">{L("Ажилд авах хэрэгцээ", "Hiring needs", "채용 수요")}</div>
+          <div className="gcard" style={{ padding: 16 }}>
+            {salary && (
+              <div style={{ marginBottom: d.selectedProfs?.length ? 12 : 0 }}>
+                <div className="grow__k">{L("Цалингийн хүрээ", "Salary range", "급여 범위")}</div>
+                <div style={{ fontSize: 16, fontWeight: 900, color: "#FF8A3D", marginTop: 2 }}>{salary}</div>
+              </div>
+            )}
+            {!!d.selectedProfs?.length && (
+              <>
+                <div className="grow__k" style={{ marginBottom: 7 }}>{L("Хайж буй мэргэжил", "Roles", "직무")}</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                  {d.selectedProfs.map((p, i) => (
+                    <span key={i} style={{
+                      fontSize: 11.5, fontWeight: 700, color: "#FF8A3D",
+                      background: "rgba(255,107,53,.12)", border: "1px solid rgba(255,107,53,.28)",
+                      borderRadius: 9, padding: "5px 11px",
+                    }}>{p}</span>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </>
+      )}
+
+      <div className="gp__lbl">{L("Бүртгэл", "Account", "계정")}</div>
+      <div className="gcard" style={{ padding: 14, display: "flex", flexDirection: "column", gap: 9 }}>
+        <button onClick={onLogout} style={{
+          width: "100%", padding: "12px", borderRadius: 13, cursor: "pointer",
+          background: "rgba(255,80,80,.10)", border: "1px solid rgba(255,80,80,.28)",
+          color: "#FF6B6B", fontWeight: 800, fontSize: 14,
+        }}>{L("Гарах", "Logout", "로그아웃")}</button>
+        <button onClick={onReset} style={{
+          width: "100%", padding: "9px", borderRadius: 12, cursor: "pointer",
+          background: "transparent", border: "1px solid rgba(255,255,255,.09)",
+          color: "rgba(255,255,255,.45)", fontWeight: 600, fontSize: 12,
+        }}>{L("Демо өгөгдөл устгах", "Reset demo data", "데모 초기화")}</button>
+        <div style={{ textAlign: "center", fontSize: 10.5, color: "rgba(255,255,255,.28)", marginTop: 2 }}>
+          SwipeHire · Beta
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function FinancePanel({ subscribed, onSubscribe, stages }) {
 
   const { t, lang } = useLang();
@@ -12581,6 +12719,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
       if (openId) { setOpenId(null); window.history.pushState({ swipehire: true }, ""); return; }
       if (dashStage) { setDashStage(null); window.history.pushState({ swipehire: true }, ""); return; }
       // Employer: go to feed tab if not already there
+      if (role === "employer" && tab === "finance") { setTab("profile"); window.history.pushState({ swipehire: true }, ""); return; }
       if (role === "employer" && tab !== "feed") { setTab("feed"); window.history.pushState({ swipehire: true }, ""); return; }
       // If at top-level (role already null or feed) — let default back happen (minimize/exit app)
     };
@@ -12876,7 +13015,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
               {lang === "en" ? "Pending review" : lang === "ko" ? "검토 중" : "Хянагдаж байна"}
             </div>
           )}
-          <button onClick={() => setShowEmpLogout(true)} title={empVerified ? (empVerifData?.name || "Verified") : undefined} style={{
+          <button onClick={() => setTab("profile")} title={empVerified ? (empVerifData?.name || "Verified") : undefined} style={{
 
             width: 34, height: 34, borderRadius: 10, border: "none", cursor: "pointer",
 
@@ -13151,11 +13290,17 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
 
 
-      {/* Санхүү tab */}
+      {/* Санхүү (профайлаас нээгдэнэ) */}
 
       {tab === "finance" && (
 
         <main className="panel" style={{ overflowY: "auto" }}>
+
+          <div style={{ padding: "14px 16px 0" }}>
+            <button onClick={() => setTab("profile")} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "8px 14px", color: "var(--ink)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              <ChevronLeft size={16} /> {lang === "en" ? "Profile" : lang === "ko" ? "프로필" : "Профайл"}
+            </button>
+          </div>
 
           <FinancePanel
 
@@ -13165,6 +13310,33 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
             stages={stages}
 
+          />
+
+        </main>
+
+      )}
+
+
+
+      {/* Профайл tab */}
+
+      {tab === "profile" && (
+
+        <main className="panel" style={{ overflowY: "auto" }}>
+
+          <EmployerProfilePanel
+            data={empVerifData}
+            verified={empVerified}
+            subscribed={empSubscribed}
+            lang={lang}
+            logoInputRef={empLogoInputRef}
+            onLogoPick={onEmpLogoPick}
+            onEditInfo={() => setEmpSubmitted(false)}
+            onOpenFinance={() => setTab("finance")}
+            onOpenInsights={() => setTab("insights")}
+            onUpgrade={() => setShowEmpPaywall(true)}
+            onLogout={() => setShowEmpLogout(true)}
+            onReset={() => setShowEmpResetConfirm(true)}
           />
 
         </main>
@@ -13207,9 +13379,9 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
         </button>
 
-        <button className={`tabbar__btn ${tab === "finance" ? "is-on" : ""}`} onClick={() => setTab("finance")}>
+        <button className={`tabbar__btn ${(tab === "profile" || tab === "finance") ? "is-on" : ""}`} onClick={() => setTab("profile")}>
 
-          <Wallet size={20} /><span>{t("tabFinance")}</span>
+          <User size={20} /><span>{lang === "en" ? "Profile" : lang === "ko" ? "프로필" : "Профайл"}</span>
 
         </button>
 
@@ -13404,6 +13576,59 @@ function Style() {
       .brandlogo__word{font-family:'Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
         font-weight:700; line-height:1; letter-spacing:-0.3px; color:#fff; white-space:nowrap}
       .brandlogo__word b{color:#FF6A00; font-weight:700}
+
+      /* ── Glass profile (black + orange) ─────────────── */
+      .gp{padding:18px 16px calc(28px + var(--tabh)); position:relative; overflow:hidden}
+      .gp::before{content:""; position:absolute; top:-120px; right:-90px; width:280px; height:280px; border-radius:50%;
+        background:radial-gradient(circle, rgba(255,107,53,.28) 0%, rgba(255,107,53,.06) 55%, transparent 72%); pointer-events:none}
+      .gp::after{content:""; position:absolute; bottom:80px; left:-110px; width:240px; height:240px; border-radius:50%;
+        background:radial-gradient(circle, rgba(255,166,0,.14) 0%, transparent 70%); pointer-events:none}
+      .gp>*{position:relative; z-index:1}
+
+      .gcard{background:linear-gradient(160deg, rgba(255,255,255,.075), rgba(255,255,255,.03));
+        border:1px solid rgba(255,255,255,.10); border-radius:24px;
+        backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%);
+        box-shadow:0 10px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.13)}
+
+      .gp__hero{padding:24px 20px 20px; text-align:center; margin-bottom:16px}
+      .gp__ava{width:104px; height:104px; border-radius:34px; margin:0 auto 14px; position:relative;
+        display:grid; place-items:center; overflow:hidden;
+        background:linear-gradient(150deg,#2a2018,#171512);
+        border:1px solid rgba(255,255,255,.14);
+        box-shadow:0 14px 34px rgba(0,0,0,.55), 0 0 0 6px rgba(255,107,53,.10), inset 0 1px 0 rgba(255,255,255,.18)}
+      .gp__ava img{width:100%; height:100%; object-fit:cover}
+      .gp__edit{position:absolute; right:-4px; bottom:-4px; width:34px; height:34px; border-radius:50%;
+        border:3px solid #12110f; background:linear-gradient(135deg,#FF8A3D,#E85400); color:#fff;
+        display:grid; place-items:center; cursor:pointer; font-size:14px; box-shadow:0 5px 14px rgba(255,107,53,.5)}
+      .gp__name{font-size:21px; font-weight:900; letter-spacing:-.3px; color:#fff}
+      .gp__badge{display:inline-flex; align-items:center; gap:5px; margin-top:8px; padding:5px 13px; border-radius:999px;
+        font-size:11.5px; font-weight:800; letter-spacing:.2px}
+
+      .gp__lbl{font-size:11px; font-weight:800; letter-spacing:1.1px; color:rgba(255,255,255,.42);
+        text-transform:uppercase; margin:22px 4px 10px}
+
+      .grow{display:flex; align-items:center; gap:13px; padding:13px 16px}
+      .grow+.grow{border-top:1px solid rgba(255,255,255,.06)}
+      .grow__ic{width:38px; height:38px; border-radius:13px; flex-shrink:0; display:grid; place-items:center;
+        background:linear-gradient(140deg, rgba(255,107,53,.22), rgba(255,107,53,.07));
+        border:1px solid rgba(255,107,53,.26); color:#FF8A3D;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
+      .grow__k{font-size:11px; color:rgba(255,255,255,.45); font-weight:600}
+      .grow__v{font-size:14px; color:#fff; font-weight:700; margin-top:1px; word-break:break-word}
+
+      .ggrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+      .gtile{border-radius:22px; padding:16px 8px 13px; display:flex; flex-direction:column; align-items:center; gap:9px;
+        cursor:pointer; border:1px solid rgba(255,255,255,.10);
+        background:linear-gradient(160deg, rgba(255,255,255,.075), rgba(255,255,255,.028));
+        backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+        box-shadow:0 8px 22px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.12);
+        transition:transform 200ms ease, box-shadow 200ms ease}
+      .gtile:active{transform:scale(.96)}
+      .gtile:hover{transform:translateY(-2px); box-shadow:0 14px 30px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.16)}
+      .gtile__ic{width:52px; height:52px; border-radius:18px; display:grid; place-items:center; font-size:23px;
+        box-shadow:0 7px 18px rgba(0,0,0,.42), inset 0 1px 0 rgba(255,255,255,.28)}
+      .gtile__t{font-size:11.5px; font-weight:800; color:#fff; text-align:center; line-height:1.25}
+      .gtile__s{font-size:9.5px; color:rgba(255,255,255,.4); text-align:center; margin-top:-4px}
 
       /* keep solid variant for other screens */
 
