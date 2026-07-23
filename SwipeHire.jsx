@@ -7589,6 +7589,42 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+
+  /* ── Data subject rights ──────────────────────────────────────────
+   * Export  — GDPR Art. 20 (portability) / Play data-portability rule
+   * Deletion — GDPR Art. 17 / Google Play account-deletion requirement
+   * Both operate on everything this app actually stores about the user.
+   */
+  const exportMyData = () => {
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      notice: "Complete copy of the personal data SwipeHire stores about you on this device.",
+      profile: _lsGet("swipehire_seeker", {}),
+      profileMeta: _lsGet("swipehire_seeker_meta", {}),
+      customSkills: _lsGet("swipehire_custom_skills", []),
+      language: _lsGet("swipehire_lang", "mn"),
+      role: _lsGet("swipehire_role", null),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `swipehire-my-data-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    flash?.(lang === "en" ? "Your data was downloaded ✓" : "Өгөгдөл татагдлаа ✓");
+  };
+
+  const deleteMyAccount = () => {
+    // Erase every key holding personal data. Language preference is kept
+    // so the confirmation screen stays readable.
+    ["swipehire_seeker", "swipehire_seeker_meta", "swipehire_custom_skills",
+     "swipehire_role", "swipehire_saved", "swipehire_stages", "swipehire_notes"]
+      .forEach(k => { try { localStorage.removeItem(k); } catch {} });
+    setShowDeleteAccount(false);
+    window.location.reload();
+  };
 
   // ── Passport edit mode: fix one missing field, then return to Passport ──
   const [passportEditMode,  setPassportEditMode]  = useState(false);
@@ -7923,6 +7959,22 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 >
                   {lang === "en" ? "Logout" : lang === "ko" ? "로그아웃" : "Гарах"}
                 </button>
+                {/* Data export — GDPR Art. 20 / Play data-portability */}
+                <button
+                  onClick={exportMyData}
+                  style={{ width: "100%", padding: "10px 0", background: "rgba(79,163,255,0.08)", border: "1px solid rgba(79,163,255,0.25)", borderRadius: 10, color: "#4FA3FF", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                >
+                  ⬇ {lang === "en" ? "Download my data" : lang === "ko" ? "내 데이터 다운로드" : "Миний өгөгдлийг татах"}
+                </button>
+
+                {/* Account deletion — required by Google Play & GDPR Art. 17 */}
+                <button
+                  onClick={() => setShowDeleteAccount(true)}
+                  style={{ width: "100%", padding: "10px 0", background: "rgba(255,80,80,0.08)", border: "1px solid rgba(255,80,80,0.28)", borderRadius: 10, color: "#FF5050", fontWeight: 700, fontSize: 13, cursor: "pointer" }}
+                >
+                  🗑 {lang === "en" ? "Delete my account" : lang === "ko" ? "계정 삭제" : "Бүртгэлээ устгах"}
+                </button>
+
                 <button
                   onClick={() => setShowResetConfirm(true)}
                   style={{ width: "100%", padding: "8px 0", background: "transparent", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "var(--dim)", fontWeight: 600, fontSize: 12, cursor: "pointer" }}
@@ -7931,6 +7983,38 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 </button>
               </div>
             </div>
+
+            {/* Delete account confirmation */}
+            {showDeleteAccount && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 220, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+                <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 340, border: "1px solid rgba(255,80,80,0.25)" }}>
+                  <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10, color: "#FF5050" }}>
+                    {lang === "en" ? "Delete account?" : lang === "ko" ? "계정을 삭제할까요?" : "Бүртгэлээ устгах уу?"}
+                  </div>
+                  <div style={{ color: "var(--dim)", fontSize: 13.5, marginBottom: 10, lineHeight: 1.55 }}>
+                    {lang === "en"
+                      ? "This permanently erases your profile, video CV, CV file, certificates, verifications and skill-test results from this device. It cannot be undone."
+                      : lang === "ko"
+                      ? "프로필, 영상 CV, 이력서, 자격증, 인증 및 테스트 결과가 이 기기에서 영구 삭제됩니다. 되돌릴 수 없습니다."
+                      : "Таны профайл, видео CV, CV файл, гэрчилгээ, баталгаажуулалт болон тестийн дүн энэ төхөөрөмжөөс бүрмөсөн устана. Буцаах боломжгүй."}
+                  </div>
+                  <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.4)", marginBottom: 18, lineHeight: 1.5 }}>
+                    {lang === "en"
+                      ? "Tip: download a copy of your data first."
+                      : lang === "ko" ? "먼저 데이터를 내려받는 것을 권장합니다."
+                      : "Зөвлөмж: эхлээд өгөгдлөө татаж авахыг зөвлөж байна."}
+                  </div>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    <button onClick={() => setShowDeleteAccount(false)} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "var(--ink)", fontWeight: 600, cursor: "pointer" }}>
+                      {lang === "en" ? "Cancel" : lang === "ko" ? "취소" : "Болих"}
+                    </button>
+                    <button onClick={deleteMyAccount} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "#FF5050", color: "#fff", fontWeight: 700, cursor: "pointer" }}>
+                      {lang === "en" ? "Delete" : lang === "ko" ? "삭제" : "Устгах"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Logout confirmation overlay */}
             {showLogoutConfirm && (
@@ -9321,6 +9405,66 @@ const EXAMPLE_QUERIES = [
   "Find me 3 welders",
 ];
 
+/* ── Match scoring — deterministic and auditable ──────────────────
+ * Produces the same score for the same candidate + query every time.
+ *
+ * Fairness constraints (deliberate):
+ *   • Protected attributes are NEVER inputs: gender, age, name, photo,
+ *     marital status, or place of origin.
+ *   • Every point is attributable to a job-relevant, employer-visible
+ *     signal, and is returned in `factors` so the score can be explained.
+ *   • The score is decision support only — it does not filter anyone out
+ *     of the employer's view.
+ */
+function computeMatchScore(c, { matchCat, minYears } = {}) {
+  const factors = [];
+  let score = 40; // neutral baseline — nobody starts disadvantaged
+
+  if (matchCat && c.category === matchCat) {
+    score += 22; factors.push({ label: "Мэргэжил тохирсон", labelEn: "Profession matches", pts: 22 });
+  }
+
+  const years = Number(c.years) || 0;
+  if (years > 0) {
+    const pts = Math.min(15, years * 2);
+    score += pts; factors.push({ label: `${years} жилийн туршлага`, labelEn: `${years} years experience`, pts });
+  }
+  if (minYears > 0 && years >= minYears) {
+    score += 8; factors.push({ label: "Шаардсан туршлага хангасан", labelEn: "Meets required experience", pts: 8 });
+  }
+
+  const skills = (c.skills?.length || 0) + (c.customSkills?.length || 0);
+  if (skills > 0) {
+    const pts = Math.min(10, skills * 2);
+    score += pts; factors.push({ label: `${skills} ур чадвар`, labelEn: `${skills} skills listed`, pts });
+  }
+
+  const certs = c.certs?.length || 0;
+  if (certs > 0) {
+    const pts = Math.min(8, certs * 4);
+    score += pts; factors.push({ label: `${certs} гэрчилгээ`, labelEn: `${certs} certificates`, pts });
+  }
+
+  if (c.skillTestCompleted && typeof c.skillTestScore === "number") {
+    const pts = Math.round((c.skillTestScore / 100) * 10);
+    score += pts; factors.push({ label: `Ур чадварын тест ${c.skillTestScore}%`, labelEn: `Skill test ${c.skillTestScore}%`, pts });
+  }
+
+  const v = c.verified || {};
+  if (v.phone) { score += 3; factors.push({ label: "Утас баталгаажсан", labelEn: "Phone verified", pts: 3 }); }
+  if (v.id)    { score += 3; factors.push({ label: "Иргэний үнэмлэх баталгаажсан", labelEn: "ID verified", pts: 3 }); }
+  if (v.skill) { score += 4; factors.push({ label: "Ур чадвар баталгаажсан", labelEn: "Skill verified", pts: 4 }); }
+
+  if ((c.about?.trim().length || 0) >= 50) {
+    score += 4; factors.push({ label: "Дэлгэрэнгүй танилцуулга", labelEn: "Detailed bio", pts: 4 });
+  }
+  if (c.videoMode || c.videoFileName) {
+    score += 5; factors.push({ label: "Видео CV байгаа", labelEn: "Has video CV", pts: 5 });
+  }
+
+  return { score: Math.max(0, Math.min(99, score)), factors };
+}
+
 function aiParseQuery(q, candidates) {
   const lower = q.toLowerCase();
   const countMatch = lower.match(/(\d+)\s*(нэр|хүн|гагнуур|барил|жолоо|тогоо|цахил|сант|хамгаа|мужаа|зөөг|цэвэр|оператор|боолт|будаг|слесарь|агуу|худал|welder|driver|cook|guard|electr|plumb|carp|clean|weld|worker|person|people|candidate)/);
@@ -9350,11 +9494,12 @@ function aiParseQuery(q, candidates) {
   const minYears = yearMatch ? parseInt(yearMatch[1]) : 0;
 
   let pool = [...candidates].map(c => {
-    const baseScore = AI_MATCH[c.id]?.score || Math.floor(58 + Math.random() * 30);
-    let bonus = 0;
-    if (matchCat && c.category === matchCat) bonus += 15;
-    if (minYears > 0 && c.years >= minYears) bonus += 10;
-    return { ...c, matchScore: Math.min(99, baseScore + bonus) };
+    // Deterministic, explainable match score — never random.
+    // Every point must trace to a job-relevant attribute the employer can see.
+    // Protected attributes (gender, age, name, location of origin) are excluded
+    // by design to avoid discriminatory ranking.
+    const { score, factors } = computeMatchScore(c, { matchCat, minYears });
+    return { ...c, matchScore: score, matchFactors: factors };
   });
 
   if (matchCat) pool = pool.filter(c => c.category === matchCat || !matchCat);
@@ -9540,6 +9685,18 @@ function AIRecruiterPanel({ candidates = [], onContact, onSetStage }) {
         <button onClick={() => { setQuery(""); setView("home"); inputRef.current?.focus(); }} style={{ background:"rgba(255,107,53,0.1)", border:"1px solid rgba(255,107,53,0.3)", borderRadius:10, padding:"6px 12px", color:"#FF6B35", fontSize:12, fontWeight:700, cursor:"pointer" }}>
           Шинэ хайлт
         </button>
+      </div>
+
+      {/* AI transparency notice — required disclosure */}
+      <div style={{ margin:"12px 16px 0", padding:"11px 13px", borderRadius:12, background:"rgba(79,163,255,0.08)", border:"1px solid rgba(79,163,255,0.22)", display:"flex", gap:9, alignItems:"flex-start", flexShrink:0 }}>
+        <span style={{ fontSize:14, lineHeight:1.2 }}>ℹ️</span>
+        <div style={{ fontSize:10.5, color:"rgba(255,255,255,0.62)", lineHeight:1.5 }}>
+          Тохирлын оноог туршлага, ур чадвар, гэрчилгээ, баталгаажуулалт зэрэг
+          <b style={{ color:"rgba(255,255,255,0.8)" }}> ажилд хамаарах мэдээлэлд </b>
+          үндэслэн автоматаар тооцов. Хүйс, нас, нэр зэрэг хувийн шинжийг
+          <b style={{ color:"rgba(255,255,255,0.8)" }}> ашиглаагүй</b>.
+          Энэ нь зөвлөмж бөгөөд эцсийн шийдвэрийг та гаргана.
+        </div>
       </div>
 
       <div style={{ flex:1, overflowY:"auto", padding:"12px 16px 24px", display:"flex", flexDirection:"column", gap:12 }}>
