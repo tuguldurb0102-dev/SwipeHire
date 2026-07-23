@@ -1,11 +1,55 @@
+# ── Dependencies ─────────────────────────────
 node_modules/
+
+# ── Build output ─────────────────────────────
 dist/
-.env
-.env.local
-android/app/src/main/assets/public/
+build/
 *.local
+
+# ── Environment & secrets ────────────────────
+.env
+.env.*
+!.env.example
+*.secret
+secrets.json
+credentials.json
+service-account*.json
+serviceAccountKey*.json
+
+# ── Keys & certificates ──────────────────────
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+keystore.properties
+
+# ── Mobile platform secrets ──────────────────
+google-services.json
+GoogleService-Info.plist
+android/local.properties
+android/keystore.properties
+ios/Pods/
+
+# ── Android build artifacts ──────────────────
 android/app/build/
 android/build/
 android/.gradle/
-android/local.properties
+android/app/src/main/assets/public/
+android/app/release/
+*.apk
+*.aab
+
+# ── IDE / OS ─────────────────────────────────
 .idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# ── Logs ─────────────────────────────────────
+*.log
+npm-debug.log*
+yarn-error.log*
