@@ -3447,24 +3447,27 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
             "Content-Type": "application/json",
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           },
+          // Data minimisation: only job-relevant attributes leave the device.
+          // Deliberately excluded — name, age, gender, phone, email, exact
+          // address, photo and any identity document. The summary is about
+          // suitability for a role, and none of those inform that.
           body: JSON.stringify({
             candidate: {
-              id: c.id,
-              name: c.name,
-              age: c.age,
+              ref: String(c.id),              // opaque reference, not a name
               category: c.category,
-              years: c.years,
-              salary: c.salary,
-              location: c.location,
-              about: c.about,
+              yearsExperience: c.years,
+              skills: (c.skills || []).slice(0, 20),
+              certifications: (c.certs || []).slice(0, 10),
+              educationLevel: (c.education || [])[0]?.degree || null,
+              summary: (c.about || "").slice(0, 600),
               skillTestScore: c.skillTestScore ?? null,
               skillTestLevel: c.skillTestLevel ?? "",
             },
-            employerNeed: empVerifData ? {
-              companyName: empVerifData.name,
+            employerNeed: {
               role: c.category,
-              location: empVerifData.location || "",
-            } : undefined,
+              // company name and location omitted — not needed to summarise
+              // a candidate's fit and they identify the employer to the model
+            },
           }),
         }
       );
@@ -3658,9 +3661,10 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
           {/* Third-party processing disclosure — the candidate's data leaves the device */}
           <div style={{ background:"rgba(255,210,63,0.07)", border:"1px solid rgba(255,210,63,0.22)", borderRadius:10, padding:"9px 11px", marginBottom:10 }}>
             <p style={{ margin:0, fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.5 }}>
-              ⚠️ Энэ үйлдэл нэр дэвшигчийн <b style={{ color:"rgba(255,255,255,0.82)" }}>нэр, нас, мэргэжил, туршлага, танилцуулгыг</b> хураангуй
-              үүсгэх зорилгоор гуравдагч талын AI үйлчилгээ рүү илгээнэ. Зөвхөн ажилд авах
-              зорилгоор ашиглана уу.
+              ⚠️ Энэ үйлдэл зөвхөн <b style={{ color:"rgba(255,255,255,0.82)" }}>ажилд хамаарах мэдээллийг</b> (мэргэжил,
+              туршлагын жил, ур чадвар, гэрчилгээ, боловсролын түвшин) гуравдагч талын AI
+              үйлчилгээ рүү илгээнэ. <b style={{ color:"rgba(255,255,255,0.82)" }}>Нэр, нас, хүйс, утас, имэйл, хаяг, зураг
+              илгээгдэхгүй</b>. Зөвхөн ажилд авах зорилгоор ашиглана уу.
             </p>
           </div>
 
@@ -5464,7 +5468,7 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
         {/* Consent gate — collected before any personal data is entered */}
         <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14, padding: "13px 14px", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <ConsentCheck on={ageOk} onToggle={() => setAgeOk(v => !v)}>
-            {L("Би 16 нас хүрсэн.", "I am at least 16 years old.")}
+            {L("Би 18 нас хүрсэн.", "I am at least 18 years old.")}
           </ConsentCheck>
           <ConsentCheck on={agreed} onToggle={() => setAgreed(v => !v)}>
             {L("Би ", "I accept the ")}
