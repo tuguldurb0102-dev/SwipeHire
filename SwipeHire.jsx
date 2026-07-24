@@ -5350,6 +5350,37 @@ function SwipeHireLogo({ size = 34, onClick, style = {} }) {
 
 /* ── Seeker Intro Screen ─────────────────────────── */
 
+/* ── Upload guard ─────────────────────────────────────────────────
+ * Rejects oversized or wrong-typed files before they are read.
+ *
+ * Without this, a large file read as a data URL can exhaust the
+ * localStorage quota and leave the profile unsaveable, and the accept=
+ * attribute alone is a hint the file picker can bypass.
+ */
+const UPLOAD_LIMITS = {
+  image: { maxMB: 5,  types: ["image/jpeg", "image/png", "image/webp", "image/heic"] },
+  video: { maxMB: 50, types: ["video/mp4", "video/quicktime", "video/webm", "video/x-matroska"] },
+  doc:   { maxMB: 10, types: ["application/pdf", "image/jpeg", "image/png"] },
+};
+
+function checkUpload(file, kind, lang) {
+  const L = (mn, en) => lang === "en" || lang === "ko" ? en : mn;
+  const rule = UPLOAD_LIMITS[kind];
+  if (!file || !rule) return { ok: false, error: L("Файл уншиж чадсангүй", "Could not read file") };
+
+  if (file.size > rule.maxMB * 1024 * 1024) {
+    const mb = (file.size / 1024 / 1024).toFixed(1);
+    return { ok: false, error: L(
+      `Файл хэт том (${mb}MB). ${rule.maxMB}MB хүртэл байх ёстой.`,
+      `File too large (${mb}MB). Maximum is ${rule.maxMB}MB.`) };
+  }
+  // Some Android pickers report an empty MIME type; fall back to the extension.
+  if (file.type && !rule.types.includes(file.type)) {
+    return { ok: false, error: L("Файлын төрөл тохирохгүй байна.", "Unsupported file type.") };
+  }
+  return { ok: true };
+}
+
 /* Legal document links — both app stores require these to be reachable
    from inside the app, not only from the store listing. */
 function LegalLinks({ lang }) {
@@ -7779,6 +7810,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
   const onPhotoPick = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const chk = checkUpload(file, "image", lang);
+    if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
     const img = new Image();
     img.onload = () => {
       const size = 300;
@@ -8689,6 +8722,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
+                  const chk = checkUpload(file, "video", lang);
+                  if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   const url = URL.createObjectURL(file);
                   upd({ videoMode: "record", videoFileName: file.name, videoFile: url });
                   flash("Бичлэг хадгалагдлаа ✓");
@@ -8714,6 +8749,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
+                  const chk = checkUpload(file, "video", lang);
+                  if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   const url = URL.createObjectURL(file);
                   upd({ videoMode: "upload", videoFileName: file.name, videoFile: url });
                   flash("Видео нэмэгдлээ ✓");
@@ -8749,6 +8786,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
+                  const chk = checkUpload(file, "doc", lang);
+                  if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   upd({ certs: [...f.certs, file.name] });
                   flash("Сертификат нэмэгдлээ ✓");
                   e.target.value = "";
@@ -8787,6 +8826,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
+                  const chk = checkUpload(file, "doc", lang);
+                  if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   const reader = new FileReader();
                   reader.onload = () => upd({ cvFile: file.name, cvFileData: reader.result });
                   reader.readAsDataURL(file);
@@ -12834,6 +12875,8 @@ export default function App() {
   const onEmpLogoPick = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const chk = checkUpload(file, "image", lang);
+    if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
     const img = new Image();
     img.onload = () => {
       const size = 240;
