@@ -10,6 +10,8 @@ import {
 
   FileDown,
 
+  Flag,
+
   MapPin,
 
   Briefcase,
@@ -3324,6 +3326,103 @@ function CandidateCard({ c, active, saved, onToggleSave, onContact, onDownload, 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
+/* ── Report sheet ─────────────────────────────────────────────────
+ * Both app stores require a way to flag user-generated content.
+ * Reports are queued locally and forwarded when a backend exists;
+ * the user is told plainly what happens next.
+ */
+function ReportSheet({ subjectName, lang, onClose }) {
+  const L = (mn, en, ko) => lang === "en" ? en : lang === "ko" ? ko : mn;
+  const [reason, setReason] = useState(null);
+  const [detail, setDetail] = useState("");
+  const [sent, setSent]     = useState(false);
+
+  const reasons = [
+    { id: "fake",       label: L("Хуурамч профайл",        "Fake profile",            "가짜 프로필") },
+    { id: "impersonate",label: L("Бусдын нэрийг далимдуулсан", "Impersonation",       "사칭") },
+    { id: "scam",       label: L("Залилан, мөнгө нэхсэн",  "Scam or money request",   "사기·금전 요구") },
+    { id: "offensive",  label: L("Доромжилсон агуулга",    "Offensive content",       "불쾌한 콘텐츠") },
+    { id: "notmine",    label: L("Миний зөвшөөрөлгүй мэдээлэл", "My data used without consent", "무단 개인정보") },
+    { id: "other",      label: L("Бусад",                  "Other",                   "기타") },
+  ];
+
+  const submit = () => {
+    try {
+      const queue = JSON.parse(localStorage.getItem("swipehire_reports") || "[]");
+      queue.push({ subject: subjectName, reason, detail: detail.slice(0, 1000), at: new Date().toISOString() });
+      localStorage.setItem("swipehire_reports", JSON.stringify(queue));
+    } catch {}
+    setSent(true);
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+         onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{ width: "100%", maxWidth: 440, background: "#1a1914", borderRadius: "22px 22px 0 0",
+        padding: "22px 20px max(30px, calc(20px + env(safe-area-inset-bottom,0px)))", border: "1px solid rgba(255,255,255,0.08)", maxHeight: "88dvh", overflowY: "auto" }}>
+
+        {sent ? (
+          <div style={{ textAlign: "center", padding: "14px 0 4px" }}>
+            <div style={{ fontSize: 42, marginBottom: 10 }}>✓</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: "#3DDC97", marginBottom: 8 }}>
+              {L("Мэдэгдэл хүлээн авлаа", "Report received", "신고 접수됨")}
+            </div>
+            <p style={{ fontSize: 12.5, color: "var(--dim)", lineHeight: 1.6, margin: "0 0 18px" }}>
+              {L("Таны мэдэгдэл бүртгэгдлээ. Туршилтын хугацаанд мэдэгдлийг энэ төхөөрөмжид хадгалж, шалгах баг ажиллаж эхэлмэгц хянана. Яаралтай тохиолдолд шууд холбогдоно уу.",
+                 "Your report has been logged. During the beta it is stored on this device and will be reviewed once the moderation team is live. For urgent matters please contact us directly.",
+                 "신고가 기록되었습니다. 베타 기간에는 기기에 저장되며 검토팀 가동 후 확인됩니다.")}
+            </p>
+            <button onClick={onClose} style={{ width: "100%", padding: 13, borderRadius: 13, border: "none", background: "#FF6B35", color: "#fff", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>
+              {L("Хаах", "Close", "닫기")}
+            </button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 17, color: "var(--ink)" }}>
+                  {L("Профайлыг мэдэгдэх", "Report profile", "프로필 신고")}
+                </div>
+                <div style={{ fontSize: 12, color: "var(--dim)", marginTop: 2 }}>{subjectName}</div>
+              </div>
+              <button onClick={onClose} style={{ background: "rgba(255,255,255,0.07)", border: "none", borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: "var(--dim)", fontSize: 15 }}>✕</button>
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
+              {reasons.map(r => (
+                <button key={r.id} onClick={() => setReason(r.id)}
+                  style={{ textAlign: "left", padding: "12px 14px", borderRadius: 12, cursor: "pointer",
+                    background: reason === r.id ? "rgba(255,107,53,0.12)" : "rgba(255,255,255,0.04)",
+                    border: `1px solid ${reason === r.id ? "rgba(255,107,53,0.45)" : "rgba(255,255,255,0.08)"}`,
+                    color: reason === r.id ? "#FF8A3D" : "var(--ink)", fontWeight: reason === r.id ? 700 : 500, fontSize: 13.5 }}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={detail} onChange={e => setDetail(e.target.value)} maxLength={1000}
+              placeholder={L("Нэмэлт тайлбар (заавал бус)", "Additional detail (optional)", "추가 설명 (선택)")}
+              style={{ width: "100%", minHeight: 76, padding: "11px 13px", borderRadius: 12, resize: "vertical",
+                border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.05)",
+                color: "var(--ink)", fontSize: 13.5, outline: "none", boxSizing: "border-box", marginBottom: 14,
+                fontFamily: "inherit" }}
+            />
+
+            <button onClick={submit} disabled={!reason}
+              style={{ width: "100%", padding: 14, borderRadius: 13, border: "none",
+                background: reason ? "#FF5050" : "rgba(255,80,80,0.28)",
+                color: reason ? "#fff" : "rgba(255,255,255,0.45)",
+                fontWeight: 800, fontSize: 15, cursor: reason ? "pointer" : "not-allowed" }}>
+              {L("Мэдэгдэл илгээх", "Submit report", "신고하기")}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact, onDownload, onSetStage, onSetNote, empVerifData }) {
 
   const { t, lang } = useLang();
@@ -3333,6 +3432,8 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
   const [draftNote, setDraftNote] = useState(note || "");
 
   const [showTranscript, setShowTranscript] = useState(false);
+
+  const [showReport, setShowReport] = useState(false);
 
   const [aiTest, setAiTest] = useState(null);   // null | "loading" | {result} | {error}
   async function runAiSummary() {
@@ -3784,6 +3885,26 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
       </div>
 
 
+
+      {/* Report — required for user-generated content on both app stores */}
+      <div style={{ padding: "0 16px 10px" }}>
+        <button
+          onClick={() => setShowReport(true)}
+          style={{ width: "100%", padding: "9px 0", borderRadius: 10, background: "transparent",
+            border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.42)",
+            fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex",
+            alignItems: "center", justifyContent: "center", gap: 6 }}>
+          <Flag size={13} /> {lang === "en" ? "Report this profile" : lang === "ko" ? "프로필 신고" : "Энэ профайлыг мэдэгдэх"}
+        </button>
+      </div>
+
+      {showReport && (
+        <ReportSheet
+          subjectName={c.name}
+          lang={lang}
+          onClose={() => setShowReport(false)}
+        />
+      )}
 
       {/* доод үйлдэл */}
 
@@ -5228,6 +5349,26 @@ function SwipeHireLogo({ size = 34, onClick, style = {} }) {
 }
 
 /* ── Seeker Intro Screen ─────────────────────────── */
+
+/* Legal document links — both app stores require these to be reachable
+   from inside the app, not only from the store listing. */
+function LegalLinks({ lang }) {
+  const L = (mn, en, ko) => lang === "en" ? en : lang === "ko" ? ko : mn;
+  const a = {
+    color: "rgba(255,255,255,0.45)", fontSize: 11, textDecoration: "none",
+    fontWeight: 600, borderBottom: "1px solid rgba(255,255,255,0.14)", paddingBottom: 1,
+  };
+  return (
+    <div style={{ display: "flex", justifyContent: "center", gap: 14, flexWrap: "wrap", padding: "10px 0 2px" }}>
+      <a href="/legal/privacy-policy.md" target="_blank" rel="noreferrer" style={a}>
+        {L("Нууцлалын бодлого", "Privacy Policy", "개인정보 처리방침")}
+      </a>
+      <a href="/legal/terms-of-service.md" target="_blank" rel="noreferrer" style={a}>
+        {L("Үйлчилгээний нөхцөл", "Terms of Service", "이용약관")}
+      </a>
+    </div>
+  );
+}
 
 /* Consent checkbox — module scope so React keeps the same component type
    across renders and the checked state is not lost on re-render. */
@@ -8022,6 +8163,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                 <span style={{ color: "var(--dim)" }}>Version</span>
                 <span style={{ color: "#FF6B35", fontWeight: 700, fontSize: 11 }}>Beta</span>
               </div>
+              <LegalLinks lang={lang} />
               <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                 <button
                   onClick={() => setShowLogoutConfirm(true)}
@@ -11810,6 +11952,7 @@ function EmployerProfilePanel({
         <div style={{ textAlign: "center", fontSize: 10.5, color: "rgba(255,255,255,.28)", marginTop: 2 }}>
           SwipeHire · Beta
         </div>
+        <LegalLinks lang={lang} />
       </div>
     </div>
   );
