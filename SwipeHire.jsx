@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from "react";
+import { computeMatchScore } from "./src/lib/matching.js";
+import { checkUpload } from "./src/lib/uploads.js";
 
 import {
 
@@ -5354,37 +5356,6 @@ function SwipeHireLogo({ size = 34, onClick, style = {} }) {
 
 /* ── Seeker Intro Screen ─────────────────────────── */
 
-/* ── Upload guard ─────────────────────────────────────────────────
- * Rejects oversized or wrong-typed files before they are read.
- *
- * Without this, a large file read as a data URL can exhaust the
- * localStorage quota and leave the profile unsaveable, and the accept=
- * attribute alone is a hint the file picker can bypass.
- */
-const UPLOAD_LIMITS = {
-  image: { maxMB: 5,  types: ["image/jpeg", "image/png", "image/webp", "image/heic"] },
-  video: { maxMB: 50, types: ["video/mp4", "video/quicktime", "video/webm", "video/x-matroska"] },
-  doc:   { maxMB: 10, types: ["application/pdf", "image/jpeg", "image/png"] },
-};
-
-function checkUpload(file, kind, lang) {
-  const L = (mn, en) => lang === "en" || lang === "ko" ? en : mn;
-  const rule = UPLOAD_LIMITS[kind];
-  if (!file || !rule) return { ok: false, error: L("Файл уншиж чадсангүй", "Could not read file") };
-
-  if (file.size > rule.maxMB * 1024 * 1024) {
-    const mb = (file.size / 1024 / 1024).toFixed(1);
-    return { ok: false, error: L(
-      `Файл хэт том (${mb}MB). ${rule.maxMB}MB хүртэл байх ёстой.`,
-      `File too large (${mb}MB). Maximum is ${rule.maxMB}MB.`) };
-  }
-  // Some Android pickers report an empty MIME type; fall back to the extension.
-  if (file.type && !rule.types.includes(file.type)) {
-    return { ok: false, error: L("Файлын төрөл тохирохгүй байна.", "Unsupported file type.") };
-  }
-  return { ok: true };
-}
-
 /* Legal document links — both app stores require these to be reachable
    from inside the app, not only from the store listing. */
 function LegalLinks({ lang }) {
@@ -9661,66 +9632,6 @@ const EXAMPLE_QUERIES = [
   "Тогооч хайна",
   "Find me 3 welders",
 ];
-
-/* ── Match scoring — deterministic and auditable ──────────────────
- * Produces the same score for the same candidate + query every time.
- *
- * Fairness constraints (deliberate):
- *   • Protected attributes are NEVER inputs: gender, age, name, photo,
- *     marital status, or place of origin.
- *   • Every point is attributable to a job-relevant, employer-visible
- *     signal, and is returned in `factors` so the score can be explained.
- *   • The score is decision support only — it does not filter anyone out
- *     of the employer's view.
- */
-function computeMatchScore(c, { matchCat, minYears } = {}) {
-  const factors = [];
-  let score = 40; // neutral baseline — nobody starts disadvantaged
-
-  if (matchCat && c.category === matchCat) {
-    score += 22; factors.push({ label: "Мэргэжил тохирсон", labelEn: "Profession matches", pts: 22 });
-  }
-
-  const years = Number(c.years) || 0;
-  if (years > 0) {
-    const pts = Math.min(15, years * 2);
-    score += pts; factors.push({ label: `${years} жилийн туршлага`, labelEn: `${years} years experience`, pts });
-  }
-  if (minYears > 0 && years >= minYears) {
-    score += 8; factors.push({ label: "Шаардсан туршлага хангасан", labelEn: "Meets required experience", pts: 8 });
-  }
-
-  const skills = (c.skills?.length || 0) + (c.customSkills?.length || 0);
-  if (skills > 0) {
-    const pts = Math.min(10, skills * 2);
-    score += pts; factors.push({ label: `${skills} ур чадвар`, labelEn: `${skills} skills listed`, pts });
-  }
-
-  const certs = c.certs?.length || 0;
-  if (certs > 0) {
-    const pts = Math.min(8, certs * 4);
-    score += pts; factors.push({ label: `${certs} гэрчилгээ`, labelEn: `${certs} certificates`, pts });
-  }
-
-  if (c.skillTestCompleted && typeof c.skillTestScore === "number") {
-    const pts = Math.round((c.skillTestScore / 100) * 10);
-    score += pts; factors.push({ label: `Ур чадварын тест ${c.skillTestScore}%`, labelEn: `Skill test ${c.skillTestScore}%`, pts });
-  }
-
-  const v = c.verified || {};
-  if (v.phone) { score += 3; factors.push({ label: "Утас баталгаажсан", labelEn: "Phone verified", pts: 3 }); }
-  if (v.id)    { score += 3; factors.push({ label: "Иргэний үнэмлэх баталгаажсан", labelEn: "ID verified", pts: 3 }); }
-  if (v.skill) { score += 4; factors.push({ label: "Ур чадвар баталгаажсан", labelEn: "Skill verified", pts: 4 }); }
-
-  if ((c.about?.trim().length || 0) >= 50) {
-    score += 4; factors.push({ label: "Дэлгэрэнгүй танилцуулга", labelEn: "Detailed bio", pts: 4 });
-  }
-  if (c.videoMode || c.videoFileName) {
-    score += 5; factors.push({ label: "Видео CV байгаа", labelEn: "Has video CV", pts: 5 });
-  }
-
-  return { score: Math.max(0, Math.min(99, score)), factors };
-}
 
 function aiParseQuery(q, candidates) {
   const lower = q.toLowerCase();
