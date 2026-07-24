@@ -7751,7 +7751,18 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
   const [seekerSubscribed, setSeekerSubscribed] = useState(false);
 
   // Persist seeker profile to localStorage on change
-  useEffect(() => { try { localStorage.setItem("swipehire_seeker", JSON.stringify(f)); } catch {} }, [f]);
+  // Persist the profile draft, but never the document contents. A CV read as
+  // a base64 data URL is a private document; localStorage is unencrypted,
+  // readable by any script on the origin, and survives until explicitly
+  // cleared. The file name is kept so the UI can show what was attached;
+  // the bytes live in memory for the session and belong in Supabase Storage
+  // (private bucket + signed URL) once configured.
+  useEffect(() => {
+    try {
+      const { cvFileData, videoFile, ...safe } = f;
+      localStorage.setItem("swipehire_seeker", JSON.stringify(safe));
+    } catch {}
+  }, [f]);
   useEffect(() => { try { localStorage.setItem("swipehire_seeker_meta", JSON.stringify({ published, verified })); } catch {} }, [published, verified]);
 
   const TOTAL = 9;
