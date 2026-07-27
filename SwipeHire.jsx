@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from "react";
+import { computeMatchScore } from "./src/lib/matching.js";
+import { checkUpload } from "./src/lib/uploads.js";
 
 import {
 
@@ -3447,24 +3449,27 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
             "Content-Type": "application/json",
             "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
           },
+          // Data minimisation: only job-relevant attributes leave the device.
+          // Deliberately excluded — name, age, gender, phone, email, exact
+          // address, photo and any identity document. The summary is about
+          // suitability for a role, and none of those inform that.
           body: JSON.stringify({
             candidate: {
-              id: c.id,
-              name: c.name,
-              age: c.age,
+              ref: String(c.id),              // opaque reference, not a name
               category: c.category,
-              years: c.years,
-              salary: c.salary,
-              location: c.location,
-              about: c.about,
+              yearsExperience: c.years,
+              skills: (c.skills || []).slice(0, 20),
+              certifications: (c.certs || []).slice(0, 10),
+              educationLevel: (c.education || [])[0]?.degree || null,
+              summary: (c.about || "").slice(0, 600),
               skillTestScore: c.skillTestScore ?? null,
               skillTestLevel: c.skillTestLevel ?? "",
             },
-            employerNeed: empVerifData ? {
-              companyName: empVerifData.name,
+            employerNeed: {
               role: c.category,
-              location: empVerifData.location || "",
-            } : undefined,
+              // company name and location omitted — not needed to summarise
+              // a candidate's fit and they identify the employer to the model
+            },
           }),
         }
       );
@@ -3658,9 +3663,10 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
           {/* Third-party processing disclosure — the candidate's data leaves the device */}
           <div style={{ background:"rgba(255,210,63,0.07)", border:"1px solid rgba(255,210,63,0.22)", borderRadius:10, padding:"9px 11px", marginBottom:10 }}>
             <p style={{ margin:0, fontSize:10.5, color:"rgba(255,255,255,0.6)", lineHeight:1.5 }}>
-              ⚠️ Энэ үйлдэл нэр дэвшигчийн <b style={{ color:"rgba(255,255,255,0.82)" }}>нэр, нас, мэргэжил, туршлага, танилцуулгыг</b> хураангуй
-              үүсгэх зорилгоор гуравдагч талын AI үйлчилгээ рүү илгээнэ. Зөвхөн ажилд авах
-              зорилгоор ашиглана уу.
+              ⚠️ Энэ үйлдэл зөвхөн <b style={{ color:"rgba(255,255,255,0.82)" }}>ажилд хамаарах мэдээллийг</b> (мэргэжил,
+              туршлагын жил, ур чадвар, гэрчилгээ, боловсролын түвшин) гуравдагч талын AI
+              үйлчилгээ рүү илгээнэ. <b style={{ color:"rgba(255,255,255,0.82)" }}>Нэр, нас, хүйс, утас, имэйл, хаяг, зураг
+              илгээгдэхгүй</b>. Зөвхөн ажилд авах зорилгоор ашиглана уу.
             </p>
           </div>
 
@@ -5350,37 +5356,6 @@ function SwipeHireLogo({ size = 34, onClick, style = {} }) {
 
 /* ── Seeker Intro Screen ─────────────────────────── */
 
-/* ── Upload guard ─────────────────────────────────────────────────
- * Rejects oversized or wrong-typed files before they are read.
- *
- * Without this, a large file read as a data URL can exhaust the
- * localStorage quota and leave the profile unsaveable, and the accept=
- * attribute alone is a hint the file picker can bypass.
- */
-const UPLOAD_LIMITS = {
-  image: { maxMB: 5,  types: ["image/jpeg", "image/png", "image/webp", "image/heic"] },
-  video: { maxMB: 50, types: ["video/mp4", "video/quicktime", "video/webm", "video/x-matroska"] },
-  doc:   { maxMB: 10, types: ["application/pdf", "image/jpeg", "image/png"] },
-};
-
-function checkUpload(file, kind, lang) {
-  const L = (mn, en) => lang === "en" || lang === "ko" ? en : mn;
-  const rule = UPLOAD_LIMITS[kind];
-  if (!file || !rule) return { ok: false, error: L("Файл уншиж чадсангүй", "Could not read file") };
-
-  if (file.size > rule.maxMB * 1024 * 1024) {
-    const mb = (file.size / 1024 / 1024).toFixed(1);
-    return { ok: false, error: L(
-      `Файл хэт том (${mb}MB). ${rule.maxMB}MB хүртэл байх ёстой.`,
-      `File too large (${mb}MB). Maximum is ${rule.maxMB}MB.`) };
-  }
-  // Some Android pickers report an empty MIME type; fall back to the extension.
-  if (file.type && !rule.types.includes(file.type)) {
-    return { ok: false, error: L("Файлын төрөл тохирохгүй байна.", "Unsupported file type.") };
-  }
-  return { ok: true };
-}
-
 /* Legal document links — both app stores require these to be reachable
    from inside the app, not only from the store listing. */
 function LegalLinks({ lang }) {
@@ -5464,7 +5439,7 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
         {/* Consent gate — collected before any personal data is entered */}
         <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 14, padding: "13px 14px", borderRadius: 14, background: "rgba(255,255,255,0.035)", border: "1px solid rgba(255,255,255,0.08)" }}>
           <ConsentCheck on={ageOk} onToggle={() => setAgeOk(v => !v)}>
-            {L("Би 16 нас хүрсэн.", "I am at least 16 years old.")}
+            {L("Би 18 нас хүрсэн.", "I am at least 18 years old.")}
           </ConsentCheck>
           <ConsentCheck on={agreed} onToggle={() => setAgreed(v => !v)}>
             {L("Би ", "I accept the ")}
@@ -7776,7 +7751,18 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
   const [seekerSubscribed, setSeekerSubscribed] = useState(false);
 
   // Persist seeker profile to localStorage on change
-  useEffect(() => { try { localStorage.setItem("swipehire_seeker", JSON.stringify(f)); } catch {} }, [f]);
+  // Persist the profile draft, but never the document contents. A CV read as
+  // a base64 data URL is a private document; localStorage is unencrypted,
+  // readable by any script on the origin, and survives until explicitly
+  // cleared. The file name is kept so the UI can show what was attached;
+  // the bytes live in memory for the session and belong in Supabase Storage
+  // (private bucket + signed URL) once configured.
+  useEffect(() => {
+    try {
+      const { cvFileData, videoFile, ...safe } = f;
+      localStorage.setItem("swipehire_seeker", JSON.stringify(safe));
+    } catch {}
+  }, [f]);
   useEffect(() => { try { localStorage.setItem("swipehire_seeker_meta", JSON.stringify({ published, verified })); } catch {} }, [published, verified]);
 
   const TOTAL = 9;
@@ -9657,66 +9643,6 @@ const EXAMPLE_QUERIES = [
   "Тогооч хайна",
   "Find me 3 welders",
 ];
-
-/* ── Match scoring — deterministic and auditable ──────────────────
- * Produces the same score for the same candidate + query every time.
- *
- * Fairness constraints (deliberate):
- *   • Protected attributes are NEVER inputs: gender, age, name, photo,
- *     marital status, or place of origin.
- *   • Every point is attributable to a job-relevant, employer-visible
- *     signal, and is returned in `factors` so the score can be explained.
- *   • The score is decision support only — it does not filter anyone out
- *     of the employer's view.
- */
-function computeMatchScore(c, { matchCat, minYears } = {}) {
-  const factors = [];
-  let score = 40; // neutral baseline — nobody starts disadvantaged
-
-  if (matchCat && c.category === matchCat) {
-    score += 22; factors.push({ label: "Мэргэжил тохирсон", labelEn: "Profession matches", pts: 22 });
-  }
-
-  const years = Number(c.years) || 0;
-  if (years > 0) {
-    const pts = Math.min(15, years * 2);
-    score += pts; factors.push({ label: `${years} жилийн туршлага`, labelEn: `${years} years experience`, pts });
-  }
-  if (minYears > 0 && years >= minYears) {
-    score += 8; factors.push({ label: "Шаардсан туршлага хангасан", labelEn: "Meets required experience", pts: 8 });
-  }
-
-  const skills = (c.skills?.length || 0) + (c.customSkills?.length || 0);
-  if (skills > 0) {
-    const pts = Math.min(10, skills * 2);
-    score += pts; factors.push({ label: `${skills} ур чадвар`, labelEn: `${skills} skills listed`, pts });
-  }
-
-  const certs = c.certs?.length || 0;
-  if (certs > 0) {
-    const pts = Math.min(8, certs * 4);
-    score += pts; factors.push({ label: `${certs} гэрчилгээ`, labelEn: `${certs} certificates`, pts });
-  }
-
-  if (c.skillTestCompleted && typeof c.skillTestScore === "number") {
-    const pts = Math.round((c.skillTestScore / 100) * 10);
-    score += pts; factors.push({ label: `Ур чадварын тест ${c.skillTestScore}%`, labelEn: `Skill test ${c.skillTestScore}%`, pts });
-  }
-
-  const v = c.verified || {};
-  if (v.phone) { score += 3; factors.push({ label: "Утас баталгаажсан", labelEn: "Phone verified", pts: 3 }); }
-  if (v.id)    { score += 3; factors.push({ label: "Иргэний үнэмлэх баталгаажсан", labelEn: "ID verified", pts: 3 }); }
-  if (v.skill) { score += 4; factors.push({ label: "Ур чадвар баталгаажсан", labelEn: "Skill verified", pts: 4 }); }
-
-  if ((c.about?.trim().length || 0) >= 50) {
-    score += 4; factors.push({ label: "Дэлгэрэнгүй танилцуулга", labelEn: "Detailed bio", pts: 4 });
-  }
-  if (c.videoMode || c.videoFileName) {
-    score += 5; factors.push({ label: "Видео CV байгаа", labelEn: "Has video CV", pts: 5 });
-  }
-
-  return { score: Math.max(0, Math.min(99, score)), factors };
-}
 
 function aiParseQuery(q, candidates) {
   const lower = q.toLowerCase();
