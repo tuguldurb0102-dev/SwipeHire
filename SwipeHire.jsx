@@ -3328,6 +3328,13 @@ function CandidateCard({ c, active, saved, onToggleSave, onContact, onDownload, 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || "";
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || "";
 
+// Demo mode: the app runs entirely on-device with sample candidates/jobs and
+// no server. It is on whenever Supabase is not configured. This flag gates
+// the demo indicator and must be false in a real deployment (env present).
+// The hardcoded CANDIDATES / JOBS / AI_MATCH below are sample fixtures shown
+// only while DEMO_MODE is true.
+const DEMO_MODE = !(SUPABASE_URL && SUPABASE_ANON_KEY);
+
 /* ── Report sheet ─────────────────────────────────────────────────
  * Both app stores require a way to flag user-generated content.
  * Reports are queued locally and forwarded when a backend exists;
@@ -8019,7 +8026,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
         {/* Beta notice */}
         <div style={{ background: "rgba(255,107,53,0.10)", borderBottom: "1px solid rgba(255,107,53,0.18)", padding: "5px 16px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, textAlign: "center" }}>
-            {lang === "en" ? "Beta version — some data is stored temporarily." : lang === "ko" ? "베타 버전 — 일부 데이터는 임시 저장됩니다." : "Туршилтын хувилбар — зарим мэдээлэл түр хадгалагдана."}
+            {DEMO_MODE ? (lang === "en" ? "Demo mode — sample data, stored only on this device." : lang === "ko" ? "데모 모드 — 샘플 데이터, 이 기기에만 저장됩니다." : "Демо горим — жишээ өгөгдөл, зөвхөн энэ төхөөрөмжид хадгалагдана.") : (lang === "en" ? "Beta version." : lang === "ko" ? "베타 버전." : "Туршилтын хувилбар.")}
           </span>
         </div>
 
@@ -13395,7 +13402,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
       {/* Beta notice */}
       <div style={{ background: "rgba(255,107,53,0.10)", borderBottom: "1px solid rgba(255,107,53,0.18)", padding: "5px 16px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
         <span style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, textAlign: "center" }}>
-          {lang === "en" ? "Beta version — some data is stored temporarily." : lang === "ko" ? "베타 버전 — 일부 데이터는 임시 저장됩니다." : "Туршилтын хувилбар — зарим мэдээлэл түр хадгалагдана."}
+          {DEMO_MODE ? (lang === "en" ? "Demo mode — sample data, stored only on this device." : lang === "ko" ? "데모 모드 — 샘플 데이터, 이 기기에만 저장됩니다." : "Демо горим — жишээ өгөгдөл, зөвхөн энэ төхөөрөмжид хадгалагдана.") : (lang === "en" ? "Beta version." : lang === "ko" ? "베타 버전." : "Туршилтын хувилбар.")}
         </span>
       </div>
 
