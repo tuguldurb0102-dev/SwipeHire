@@ -13868,9 +13868,31 @@ function Style() {
 
       .app{
 
-        --bg:#11110f; --ink:#f5f3ee; --dim:#a8a49b; --tabh:60px;
-
+        /* ── SwipeHire premium design tokens (dark · black + orange) ── */
+        --bg:#0f0e0c; --bg-2:#141310; --ink:#f6f4ef; --ink-2:#d6d2c9; --dim:#9a968d; --tabh:64px;
         --sat: env(safe-area-inset-top, 0px);
+
+        /* brand accent scale */
+        --accent:#FF6B35; --accent-2:#FF8A3D; --accent-deep:#E85400; --accent-soft:rgba(255,107,53,.13);
+        --success:#3DDC97; --info:#4FA3FF; --warn:#FFC24B; --danger:#FF6B6B;
+
+        /* surfaces — soft, layered, glass-ready */
+        --surface:rgba(255,255,255,.045); --surface-2:rgba(255,255,255,.07);
+        --surface-hi:linear-gradient(160deg,rgba(255,255,255,.08),rgba(255,255,255,.03));
+        --hair:rgba(255,255,255,.09); --hair-2:rgba(255,255,255,.14);
+
+        /* radii — large, friendly (16–28px) */
+        --r-xs:10px; --r-sm:14px; --r-md:18px; --r-lg:22px; --r-xl:28px; --r-pill:999px;
+
+        /* soft, layered elevation */
+        --sh-1:0 2px 8px rgba(0,0,0,.28);
+        --sh-2:0 8px 24px rgba(0,0,0,.40), inset 0 1px 0 rgba(255,255,255,.06);
+        --sh-3:0 16px 44px rgba(0,0,0,.52), inset 0 1px 0 rgba(255,255,255,.10);
+        --sh-accent:0 8px 24px rgba(255,107,53,.34);
+
+        /* motion */
+        --ease:cubic-bezier(.22,1,.36,1); --ease-out:cubic-bezier(.16,1,.3,1);
+        --dur-1:150ms; --dur-2:240ms; --dur-3:380ms;
 
         position:relative; width:100%; max-width:440px; height:100dvh;
 
@@ -13879,7 +13901,43 @@ function Style() {
         font-family:'Inter',system-ui,sans-serif; overflow:hidden;
 
         display:flex; flex-direction:column;
+        -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
 
+      }
+
+      /* ── Global premium polish ─────────────────────────────────── */
+      .app *{ -webkit-tap-highlight-color:transparent }
+      .app button, .app [role="button"]{ transition:transform var(--dur-1) var(--ease), box-shadow var(--dur-2) var(--ease), background var(--dur-2) var(--ease), opacity var(--dur-1) var(--ease) }
+      .app button:active, .app [role="button"]:active{ transform:scale(.97) }
+      .app :focus-visible{ outline:2px solid var(--accent); outline-offset:2px; border-radius:8px }
+
+      @keyframes sh_rise{ from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none} }
+      @keyframes sh_pop{ 0%{transform:scale(.94); opacity:0} 100%{transform:scale(1); opacity:1} }
+      @keyframes sh_shimmer{ 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+      .sh-rise{ animation:sh_rise var(--dur-3) var(--ease-out) both }
+
+      /* premium button primitive */
+      .btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px;
+        border:none; cursor:pointer; font-weight:800; font-size:15px; letter-spacing:-.1px;
+        padding:14px 20px; border-radius:var(--r-md); color:#fff;
+        background:linear-gradient(135deg,var(--accent-2),var(--accent-deep));
+        box-shadow:var(--sh-accent) }
+      .btn:hover{ transform:translateY(-1px); box-shadow:0 12px 30px rgba(255,107,53,.42) }
+      .btn--ghost{ background:transparent; color:var(--ink); border:1px solid var(--hair-2); box-shadow:none }
+      .btn--ghost:hover{ background:var(--surface); transform:translateY(-1px); box-shadow:none }
+      .btn--soft{ background:var(--accent-soft); color:var(--accent-2); box-shadow:none }
+
+      /* premium card primitive */
+      .card{ background:var(--surface-hi); border:1px solid var(--hair);
+        border-radius:var(--r-lg); box-shadow:var(--sh-2);
+        backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%) }
+
+      /* skeleton loading */
+      .skeleton{ background:linear-gradient(90deg,rgba(255,255,255,.05) 25%,rgba(255,255,255,.11) 37%,rgba(255,255,255,.05) 63%);
+        background-size:200% 100%; animation:sh_shimmer 1.4s ease-in-out infinite; border-radius:var(--r-sm) }
+
+      @media (prefers-reduced-motion: reduce){
+        .app *,.app button{ animation:none !important; transition:none !important }
       }
 
 
@@ -14188,11 +14246,13 @@ function Style() {
 
       .pills--wrap{flex-wrap:wrap}
 
-      .pill{padding:9px 13px; border-radius:999px; background:rgba(255,255,255,.07);
+      .pill{padding:9px 14px; border-radius:var(--r-pill); background:var(--surface);
+        border:1px solid var(--hair); color:var(--ink-2); font-size:13px; font-weight:600;
+        cursor:pointer; white-space:nowrap;
+        transition:background var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), color var(--dur-2) var(--ease)}
 
-        border:1px solid rgba(255,255,255,.14); color:var(--ink); font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap}
-
-      .pill.is-on{background:#FF6B35; border-color:#FF6B35; color:#11110f}
+      .pill.is-on{background:linear-gradient(135deg,var(--accent-2),var(--accent-deep));
+        border-color:transparent; color:#fff; font-weight:700; box-shadow:var(--sh-accent)}
 
 
 
@@ -14720,30 +14780,35 @@ function Style() {
 
       /* доод таб */
 
-      .tabbar{flex:0 0 var(--tabh); display:flex; align-items:stretch; background:#16150f;
-
-        border-top:1px solid rgba(255,255,255,.08); z-index:40}
+      .tabbar{flex:0 0 var(--tabh); display:flex; align-items:stretch;
+        background:linear-gradient(180deg,rgba(20,19,16,.72),rgba(15,14,12,.94));
+        backdrop-filter:blur(20px) saturate(140%); -webkit-backdrop-filter:blur(20px) saturate(140%);
+        border-top:1px solid var(--hair); z-index:40;
+        padding-bottom:env(safe-area-inset-bottom,0px)}
 
       .tabbar__btn{flex:1; background:none; border:none; cursor:pointer; color:var(--dim);
+        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+        font-size:10.5px; font-weight:600; letter-spacing:-.1px; min-width:0; position:relative;
+        transition:color var(--dur-2) var(--ease)}
 
-        display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
-
-        font-size:11px; font-weight:600; transition:color .15s ease; min-width:0}
-
-      @media (max-width:380px){.tabbar__btn{font-size:9.5px; gap:2px}}
+      @media (max-width:380px){.tabbar__btn{font-size:9.5px; gap:3px}}
       @media (max-width:380px){.topbar--premium{gap:6px; padding:8px 10px}}
 
-      .tabbar__btn.is-on{color:var(--ink)}
-
-      .tabbar__btn.is-on svg{color:#FF6B35}
+      .tabbar__btn svg{transition:transform var(--dur-2) var(--ease)}
+      .tabbar__btn.is-on{color:var(--ink); font-weight:700}
+      .tabbar__btn.is-on svg{color:var(--accent); transform:translateY(-1px) scale(1.08)}
+      /* active pill indicator above the icon */
+      .tabbar__btn.is-on::before{content:""; position:absolute; top:7px; width:22px; height:3px;
+        border-radius:var(--r-pill); background:linear-gradient(90deg,var(--accent-2),var(--accent-deep));
+        box-shadow:0 0 10px rgba(255,107,53,.6); animation:sh_pop var(--dur-2) var(--ease) both}
 
       .tabbar__icon{position:relative; display:inline-flex}
 
-      .tabbar__icon em{position:absolute; top:-6px; right:-9px; background:#FF6B35; color:#11110f;
-
-        font-style:normal; font-size:10px; font-weight:700; line-height:1; min-width:16px; height:16px;
-
-        padding:0 4px; border-radius:9px; display:grid; place-items:center}
+      .tabbar__icon em{position:absolute; top:-6px; right:-9px;
+        background:linear-gradient(135deg,var(--accent-2),var(--accent-deep)); color:#fff;
+        font-style:normal; font-size:10px; font-weight:800; line-height:1; min-width:16px; height:16px;
+        padding:0 4px; border-radius:var(--r-pill); display:grid; place-items:center;
+        box-shadow:0 2px 8px rgba(255,107,53,.5)}
 
 
 
