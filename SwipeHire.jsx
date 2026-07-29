@@ -14237,9 +14237,11 @@ function Style() {
 
       .wiz__count{font-size:13px; font-weight:600; color:var(--dim); flex:0 0 auto; min-width:34px; text-align:right}
 
-      .wiz__bar{flex:0 0 auto; height:4px; background:rgba(255,255,255,.1); position:relative; z-index:5}
+      .wiz__bar{flex:0 0 auto; height:4px; background:rgba(255,255,255,.08); position:relative; z-index:5}
 
-      .wiz__bar span{display:block; height:100%; background:linear-gradient(90deg,#FF6B35,#FFD23F); transition:width .3s ease}
+      .wiz__bar span{display:block; height:100%; border-radius:0 999px 999px 0;
+        background:linear-gradient(90deg,#FF8A3D,#E85400); box-shadow:0 0 12px rgba(255,107,53,.6);
+        transition:width var(--dur-3) var(--ease)}
 
       .panel--wiz{padding-top:0}
 
@@ -14259,11 +14261,13 @@ function Style() {
 
       .field__label svg{color:var(--dim)}
 
-      .field input, .field textarea{width:100%; background:#1b1a15; border:1px solid rgba(255,255,255,.12);
+      .field input, .field textarea{width:100%; background:var(--surface); border:1px solid var(--hair);
 
-        border-radius:11px; color:var(--ink); font-family:inherit; font-size:14px; padding:12px 13px; resize:vertical}
+        border-radius:var(--r-sm); color:var(--ink); font-family:inherit; font-size:15px; padding:13px 14px; resize:vertical;
+        transition:border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), background var(--dur-2) var(--ease)}
 
-      .field input:focus, .field textarea:focus{outline:none; border-color:#FF6B35}
+      .field input:focus, .field textarea:focus{outline:none; border-color:var(--accent); background:var(--surface-2);
+        box-shadow:0 0 0 3px rgba(255,107,53,.16)}
 
       .field input::placeholder, .field textarea::placeholder{color:#6b685f}
 
@@ -14351,15 +14355,22 @@ function Style() {
 
 
 
-      .wiz__actions{flex:0 0 auto; display:flex; gap:9px; padding:12px 16px;
+      .wiz__actions{flex:0 0 auto; display:flex; gap:10px; padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));
 
-        border-top:1px solid rgba(255,255,255,.08); background:#16150f}
+        border-top:1px solid var(--hair);
+        background:linear-gradient(180deg,rgba(22,21,15,.6),rgba(15,14,12,.96));
+        backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%)}
 
       .wiz__btn{flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
 
-        padding:14px; border-radius:13px; border:none; cursor:pointer; font-weight:700; font-size:14.5px; color:#11110f; transition:background .15s ease}
+        padding:15px; border-radius:var(--r-md); border:none; cursor:pointer; font-weight:800; font-size:15px; color:#fff;
+        box-shadow:var(--sh-accent);
+        transition:background var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), transform var(--dur-1) var(--ease)}
 
-      .wiz__btn--ghost{flex:0 0 auto; min-width:90px; background:rgba(255,255,255,.1) !important; color:var(--ink)}
+      .wiz__btn:hover{transform:translateY(-1px); box-shadow:0 12px 30px rgba(255,107,53,.42)}
+
+      .wiz__btn--ghost{flex:0 0 auto; min-width:92px; background:var(--surface) !important; color:var(--ink); box-shadow:none}
+      .wiz__btn--ghost:hover{background:var(--surface-2) !important; box-shadow:none}
 
 
 
