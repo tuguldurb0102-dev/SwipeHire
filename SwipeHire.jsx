@@ -14147,31 +14147,37 @@ function Style() {
 
       .seeker__hero span{font-size:12.5px; color:var(--dim)}
 
-      .seeker__progress{background:#1b1a15; border:1px solid rgba(255,255,255,.07); border-radius:16px;
+      .seeker__progress{background:var(--surface-hi); border:1px solid var(--hair); border-radius:var(--r-lg);
+        box-shadow:var(--sh-2); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
 
-        padding:14px 15px; margin-bottom:18px}
+        padding:16px 16px; margin-bottom:18px}
 
-      .seeker__ptop{display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:9px}
+      .seeker__ptop{display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; margin-bottom:10px}
 
-      .seeker__ptop b{font-family:'Barlow Condensed',sans-serif; font-size:18px}
+      .seeker__ptop b{font-family:'Barlow Condensed',sans-serif; font-size:19px}
 
-      .seeker__pbar{height:8px; background:rgba(255,255,255,.1); border-radius:4px; overflow:hidden}
+      .seeker__pbar{height:9px; background:rgba(255,255,255,.08); border-radius:999px; overflow:hidden}
 
-      .seeker__pbar span{display:block; height:100%; background:linear-gradient(90deg,#FF6B35,#FFD23F); border-radius:4px; transition:width .3s ease}
+      .seeker__pbar span{display:block; height:100%; background:linear-gradient(90deg,#FF8A3D,#E85400); border-radius:999px;
+        box-shadow:0 0 10px rgba(255,107,53,.55); transition:width var(--dur-3) var(--ease)}
 
       .seeker__progress small{display:block; margin-top:7px; font-size:11px; color:var(--dim)}
 
       .seeker__steps{display:flex; flex-direction:column; gap:10px; margin-bottom:16px}
 
-      .sstep{display:flex; align-items:center; gap:13px; background:#1b1a15; border:1px solid rgba(255,255,255,.07);
+      .sstep{display:flex; align-items:center; gap:13px; background:var(--surface); border:1px solid var(--hair);
 
-        border-radius:15px; padding:13px; cursor:pointer; text-align:left; transition:transform .12s ease}
+        border-radius:var(--r-md); padding:14px; cursor:pointer; text-align:left;
+        box-shadow:var(--sh-1);
+        transition:transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease)}
 
       .sstep:active{transform:scale(.98)}
+      .sstep:hover{transform:translateY(-2px); box-shadow:var(--sh-2); border-color:var(--hair-2)}
 
       .sstep.is-done{background:rgba(61,220,151,.07); border-color:rgba(61,220,151,.25)}
 
-      .sstep__icon{flex:0 0 auto; width:46px; height:46px; border-radius:12px; display:grid; place-items:center}
+      .sstep__icon{flex:0 0 auto; width:46px; height:46px; border-radius:var(--r-sm); display:grid; place-items:center;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.14)}
 
       .sstep__body{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
 
@@ -14193,11 +14199,13 @@ function Style() {
 
       .seeker__hint{font-size:12.5px; color:var(--dim); line-height:1.5; padding:0 2px}
 
-      .seeker__edit{width:100%; margin-top:16px; background:rgba(255,255,255,.08);
+      .seeker__edit{width:100%; margin-top:16px; background:var(--surface);
 
-        border:1px solid rgba(255,255,255,.16); color:var(--ink); font-weight:600; font-size:14px;
+        border:1px solid var(--hair-2); color:var(--ink); font-weight:700; font-size:14px;
 
-        padding:13px; border-radius:13px; cursor:pointer}
+        padding:14px; border-radius:var(--r-md); cursor:pointer;
+        transition:background var(--dur-2) var(--ease), transform var(--dur-1) var(--ease)}
+      .seeker__edit:hover{background:var(--surface-2); transform:translateY(-1px)}
 
 
 
