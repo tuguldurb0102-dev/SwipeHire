@@ -12609,6 +12609,14 @@ function SplashScreen({ onDone }) {
           from { opacity:1; }
           to   { opacity:0; }
         }
+        @keyframes sh_breathe {
+          0%,100% { transform:translateY(0) scale(1); }
+          50%     { transform:translateY(-3px) scale(1.015); }
+        }
+        @keyframes sh_bar {
+          0%   { transform:translateX(-100%); }
+          100% { transform:translateX(320%); }
+        }
       `}</style>
 
       <div style={{
@@ -12651,10 +12659,14 @@ function SplashScreen({ onDone }) {
           {/* Official SwipeHire icon — real PNG brand asset */}
           <img
             src="/splash-logo.png"
-            width={88}
-            height={88}
+            width={96}
+            height={96}
             alt="SwipeHire"
-            style={{ display: "block", position: "relative", borderRadius: 18, objectFit: "contain" }}
+            style={{
+              display: "block", position: "relative", borderRadius: 24, objectFit: "contain",
+              boxShadow: "0 18px 44px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06), 0 8px 30px rgba(255,106,0,0.28)",
+              animation: "sh_breathe 3.4s ease-in-out infinite",
+            }}
           />
         </div>
 
@@ -12691,23 +12703,22 @@ function SplashScreen({ onDone }) {
           AI Matching. Better Hiring.
         </div>
 
-        {/* ── Loading dots ── */}
+        {/* ── Loading progress bar ── */}
         <div style={{
           position: "absolute",
-          bottom: "max(52px, calc(52px + env(safe-area-inset-bottom,0px)))",
-          display: "flex", gap: 8,
+          bottom: "max(56px, calc(56px + env(safe-area-inset-bottom,0px)))",
+          width: 128, height: 3, borderRadius: 999,
+          background: "rgba(255,255,255,0.08)", overflow: "hidden",
           animation: phase >= 3 ? "sh_fade 300ms ease forwards" : "none",
           opacity: phase >= 3 ? undefined : 0,
         }}>
-          {[0, 1, 2].map(i => (
-            <div key={i} style={{
-              width: 6, height: 6, borderRadius: "50%",
-              background: "#FF6A00",
-              animation: phase >= 3 ? `sh_dot 1.1s ease-in-out infinite` : "none",
-              animationDelay: `${i * 180}ms`,
-              willChange: "transform,opacity",
-            }} />
-          ))}
+          <div style={{
+            width: "38%", height: "100%", borderRadius: 999,
+            background: "linear-gradient(90deg,#FF8A3D,#E85400)",
+            boxShadow: "0 0 12px rgba(255,106,0,0.7)",
+            animation: phase >= 3 ? "sh_bar 1.15s cubic-bezier(0.5,0,0.2,1) infinite" : "none",
+            willChange: "transform",
+          }} />
         </div>
 
       </div>
