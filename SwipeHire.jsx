@@ -5417,13 +5417,13 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
 
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#0d0c0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", boxSizing: "border-box" }}>
+    <div style={{ minHeight: "100dvh", position: "relative", overflow: "hidden", background: "radial-gradient(120% 70% at 50% 0%, rgba(255,107,53,.14), transparent 58%), #0d0c0a", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "32px 24px", boxSizing: "border-box" }}>
       {/* Back */}
-      <button onClick={onBack} style={{ position: "absolute", top: 20, left: 16, background: "rgba(255,255,255,0.07)", border: "none", borderRadius: 10, width: 36, height: 36, display: "grid", placeItems: "center", color: "var(--ink, #f0ede6)", cursor: "pointer", fontSize: 18 }}>‹</button>
+      <button onClick={onBack} style={{ position: "absolute", top: 20, left: 16, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, width: 38, height: 38, display: "grid", placeItems: "center", color: "var(--ink, #f0ede6)", cursor: "pointer", fontSize: 19 }}>‹</button>
 
       {/* Title */}
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
-        <div style={{ fontSize: 26, fontWeight: 900, color: "#f0ede6", marginBottom: 10 }}>
+      <div style={{ textAlign: "center", marginBottom: 34, position: "relative" }}>
+        <div style={{ fontSize: 28, fontWeight: 900, color: "#f6f4ef", marginBottom: 10, letterSpacing: "-.4px" }}>
           {L("SwipeHire гэж юу вэ?", "What is SwipeHire?")}
         </div>
         <div style={{ fontSize: 14, color: "rgba(240,237,230,0.55)", lineHeight: 1.6, maxWidth: 300, margin: "0 auto" }}>
@@ -5432,11 +5432,22 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
       </div>
 
       {/* Feature cards */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 360, marginBottom: 36 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%", maxWidth: 360, marginBottom: 34, position: "relative" }}>
         {cards.map((c, i) => (
-          <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.09)", borderRadius: 16, padding: "16px 18px", display: "flex", alignItems: "center", gap: 14 }}>
-            <span style={{ fontSize: 26 }}>{c.icon}</span>
-            <span style={{ fontSize: 14, fontWeight: 600, color: "#f0ede6" }}>{c.text}</span>
+          <div key={i} style={{
+            background: "linear-gradient(160deg,rgba(255,255,255,.075),rgba(255,255,255,.03))",
+            border: "1px solid rgba(255,255,255,0.09)", borderRadius: 20, padding: "15px 17px",
+            display: "flex", alignItems: "center", gap: 14,
+            boxShadow: "0 8px 24px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.07)",
+            backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)",
+            animation: `sh_rise 480ms cubic-bezier(.16,1,.3,1) ${i * 90}ms both`,
+          }}>
+            <span style={{
+              width: 46, height: 46, flexShrink: 0, borderRadius: 14, display: "grid", placeItems: "center", fontSize: 23,
+              background: "rgba(255,107,53,.13)", border: "1px solid rgba(255,107,53,.24)",
+              boxShadow: "inset 0 1px 0 rgba(255,255,255,.14)",
+            }}>{c.icon}</span>
+            <span style={{ fontSize: 14.5, fontWeight: 600, color: "#f0ede6", lineHeight: 1.35 }}>{c.text}</span>
           </div>
         ))}
       </div>
@@ -5466,10 +5477,11 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
           onClick={() => canStart && onStart()}
           disabled={!canStart}
           title={canStart ? undefined : L("Эхлэхийн тулд зөвшөөрнө үү", "Please accept to continue")}
-          style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none",
-            background: canStart ? "linear-gradient(135deg,#FF6B35,#e8542a)" : "rgba(255,107,53,0.28)",
-            color: canStart ? "#fff" : "rgba(255,255,255,0.5)", fontWeight: 800, fontSize: 16,
-            cursor: canStart ? "pointer" : "not-allowed", transition: "all 180ms" }}>
+          style={{ width: "100%", padding: "16px 0", borderRadius: 16, border: "none",
+            background: canStart ? "linear-gradient(135deg,#FF8A3D,#E85400)" : "rgba(255,107,53,0.22)",
+            color: canStart ? "#fff" : "rgba(255,255,255,0.45)", fontWeight: 800, fontSize: 16,
+            boxShadow: canStart ? "0 10px 26px rgba(255,107,53,.38)" : "none",
+            cursor: canStart ? "pointer" : "not-allowed", transition: "all 200ms cubic-bezier(.22,1,.36,1)" }}>
           {L("Бүртгэл эхлүүлэх", "Get Started")}
         </button>
         <button onClick={onDemo} style={{ width: "100%", padding: "13px 0", borderRadius: 14, border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "rgba(240,237,230,0.7)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
