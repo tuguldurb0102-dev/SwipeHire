@@ -14091,21 +14091,25 @@ function Style() {
 
       .role__brand{display:flex; align-items:center; margin-bottom:32px}
 
-      .role__title{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:34px; line-height:1; margin-bottom:8px}
+      .role__title{font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:36px; line-height:1; margin-bottom:10px; letter-spacing:-.5px}
 
-      .role__sub{font-size:14px; color:var(--dim); line-height:1.5; margin-bottom:28px}
+      .role__sub{font-size:14px; color:var(--dim); line-height:1.55; margin-bottom:30px}
 
-      .rolecard{width:100%; max-width:360px; display:flex; align-items:center; gap:14px;
-
-        background:#1b1a15; border:1px solid rgba(255,255,255,.08); border-radius:18px;
-
-        padding:18px 16px; margin-bottom:13px; cursor:pointer; text-align:left; transition:transform .12s ease, border-color .15s ease}
+      .rolecard{width:100%; max-width:360px; display:flex; align-items:center; gap:15px;
+        background:var(--surface-hi); border:1px solid var(--hair); border-radius:var(--r-lg);
+        box-shadow:var(--sh-2); backdrop-filter:blur(16px) saturate(140%); -webkit-backdrop-filter:blur(16px) saturate(140%);
+        padding:19px 17px; margin-bottom:14px; cursor:pointer; text-align:left;
+        transition:transform var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease)}
 
       .rolecard:active{transform:scale(.98)}
 
-      .rolecard:hover{border-color:rgba(255,255,255,.2)}
+      .rolecard:hover{transform:translateY(-3px); border-color:var(--hair-2);
+        box-shadow:0 18px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.12)}
 
-      .rolecard__icon{flex:0 0 auto; width:54px; height:54px; border-radius:14px; display:grid; place-items:center}
+      .rolecard:hover .rolecard__arrow{transform:translateX(4px); color:var(--accent-2)}
+
+      .rolecard__icon{flex:0 0 auto; width:56px; height:56px; border-radius:var(--r-md); display:grid; place-items:center;
+        box-shadow:inset 0 1px 0 rgba(255,255,255,.16), 0 6px 16px rgba(0,0,0,.32)}
 
       .rolecard__body{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px}
 
@@ -14113,7 +14117,7 @@ function Style() {
 
       .rolecard__body small{font-size:12.5px; color:var(--dim); line-height:1.4}
 
-      .rolecard__arrow{color:var(--dim); flex:0 0 auto}
+      .rolecard__arrow{color:var(--dim); flex:0 0 auto; transition:transform var(--dur-2) var(--ease), color var(--dur-2) var(--ease)}
 
       .role__foot{margin-top:22px; font-size:12px; color:#3DDC97; font-weight:600}
 
