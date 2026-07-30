@@ -9830,10 +9830,19 @@ function AIRecruiterPanel({ candidates = [], onContact, onSetStage }) {
           { label:"Видео CV", value:candidates.filter(c=>c.videoUrl).length, icon:"🎥", color:"#FF6B35" },
           { label:"Ажиллах боломжтой", value:candidates.filter(c=>c.available).length, icon:"🟢", color:"#FFD23F" },
         ].map((s,i) => (
-          <div key={i} style={{ background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.07)", borderRadius:14, padding:"14px 16px" }}>
-            <div style={{ fontSize:20, marginBottom:4 }}>{s.icon}</div>
-            <div style={{ fontSize:22, fontWeight:900, color:s.color, fontFamily:"'Barlow Condensed',sans-serif" }}>{s.value}</div>
-            <div style={{ fontSize:11, color:"var(--dim)", fontWeight:600 }}>{s.label}</div>
+          <div key={i} style={{
+            background:"linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.03))",
+            border:"1px solid rgba(255,255,255,0.09)", borderRadius:20, padding:"16px 16px",
+            boxShadow:"0 8px 22px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.07)",
+            backdropFilter:"blur(14px)", WebkitBackdropFilter:"blur(14px)",
+            animation:`sh_rise 460ms cubic-bezier(.16,1,.3,1) ${i*70}ms both`,
+          }}>
+            <div style={{
+              width:38, height:38, borderRadius:12, display:"grid", placeItems:"center", fontSize:19, marginBottom:9,
+              background:s.color+"1f", border:`1px solid ${s.color}3d`, boxShadow:"inset 0 1px 0 rgba(255,255,255,.12)",
+            }}>{s.icon}</div>
+            <div style={{ fontSize:26, fontWeight:900, color:s.color, fontFamily:"'Barlow Condensed',sans-serif", lineHeight:1 }}>{s.value}</div>
+            <div style={{ fontSize:11, color:"var(--dim)", fontWeight:600, marginTop:3 }}>{s.label}</div>
           </div>
         ))}
       </div>
