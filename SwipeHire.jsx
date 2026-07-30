@@ -9797,11 +9797,11 @@ function AIRecruiterPanel({ candidates = [], onContact, onSetStage }) {
             onChange={e => setQuery(e.target.value)}
             onKeyDown={e => e.key === "Enter" && startSearch()}
             placeholder='Жишээ: "5 гагнуурчин хайна"'
-            style={{ width:"100%", boxSizing:"border-box", padding:"14px 52px 14px 18px", borderRadius:16, border:"1.5px solid rgba(255,107,53,0.35)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:14, fontWeight:600, outline:"none", caretColor:"#FF6B35" }}
+            style={{ width:"100%", boxSizing:"border-box", padding:"15px 56px 15px 18px", borderRadius:18, border:"1.5px solid rgba(255,107,53,0.32)", background:"rgba(255,255,255,0.05)", color:"#fff", fontSize:14.5, fontWeight:600, outline:"none", caretColor:"#FF6B35", boxShadow:"0 8px 26px rgba(255,107,53,.14), inset 0 1px 0 rgba(255,255,255,.06)" }}
           />
           <button
             onClick={() => startSearch()}
-            style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", width:38, height:38, borderRadius:12, border:"none", background:"linear-gradient(135deg,#FF6B35,#e8542a)", color:"#fff", cursor:"pointer", display:"grid", placeItems:"center", fontSize:18 }}
+            style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)", width:40, height:40, borderRadius:14, border:"none", background:"linear-gradient(135deg,#FF8A3D,#E85400)", color:"#fff", cursor:"pointer", display:"grid", placeItems:"center", fontSize:18, boxShadow:"0 6px 16px rgba(255,107,53,.4)" }}
           >
             <Search size={18} />
           </button>
@@ -9813,8 +9813,8 @@ function AIRecruiterPanel({ candidates = [], onContact, onSetStage }) {
         <div style={{ fontSize:11, fontWeight:700, color:"var(--dim)", letterSpacing:1, textTransform:"uppercase", marginBottom:10 }}>Жишээ хайлт</div>
         <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
           {EXAMPLE_QUERIES.map((q, i) => (
-            <button key={i} onClick={() => startSearch(q)} style={{ textAlign:"left", padding:"12px 16px", borderRadius:14, border:"1px solid rgba(255,255,255,0.08)", background:"rgba(255,255,255,0.03)", color:"var(--ink)", fontSize:13, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:10 }}>
-              <span style={{ fontSize:16 }}>🔎</span>
+            <button key={i} onClick={() => startSearch(q)} className="ai-ex" style={{ textAlign:"left", padding:"13px 15px", borderRadius:16, border:"1px solid rgba(255,255,255,0.08)", background:"linear-gradient(160deg,rgba(255,255,255,.06),rgba(255,255,255,.025))", color:"var(--ink)", fontSize:13.5, fontWeight:600, cursor:"pointer", display:"flex", alignItems:"center", gap:11, boxShadow:"0 4px 14px rgba(0,0,0,.28)" }}>
+              <span style={{ width:32, height:32, flexShrink:0, borderRadius:10, display:"grid", placeItems:"center", fontSize:15, background:"rgba(79,163,255,.14)", border:"1px solid rgba(79,163,255,.24)" }}>🔎</span>
               <span style={{ flex:1 }}>{q}</span>
               <ChevronRight size={16} color="var(--dim)" />
             </button>
@@ -13958,6 +13958,8 @@ function Style() {
       .btn--ghost{ background:transparent; color:var(--ink); border:1px solid var(--hair-2); box-shadow:none }
       .btn--ghost:hover{ background:var(--surface); transform:translateY(-1px); box-shadow:none }
       .btn--soft{ background:var(--accent-soft); color:var(--accent-2); box-shadow:none }
+      .ai-ex{ transition:transform var(--dur-2) var(--ease), border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease) }
+      .ai-ex:hover{ transform:translateY(-2px); border-color:rgba(255,107,53,.3); box-shadow:0 10px 26px rgba(0,0,0,.4) }
 
       /* premium card primitive */
       .card{ background:var(--surface-hi); border:1px solid var(--hair);
