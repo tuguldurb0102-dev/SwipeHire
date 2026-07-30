@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from "react";
 import { computeMatchScore } from "./src/lib/matching.js";
 import { checkUpload } from "./src/lib/uploads.js";
+import PaymentFlow from "./src/components/billing/PaymentFlow.jsx";
+import EmployerPlanSheet from "./src/components/billing/EmployerPlanSheet.jsx";
+import SeekerPaymentsPanel from "./src/components/billing/SeekerPaymentsPanel.jsx";
+import EmployerBillingOverview from "./src/components/billing/EmployerBillingOverview.jsx";
+import EmployerUsagePanel from "./src/components/billing/EmployerUsagePanel.jsx";
+import EmployerInvoicePanel from "./src/components/billing/EmployerInvoicePanel.jsx";
+import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnalyticsPanel.jsx";
 
 import {
 
@@ -10104,7 +10111,17 @@ function SeekerFinancePanel() {
 
     <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
 
+      {/* PRIMARY job-seeker billing: pay-per-service (Step 5) */}
+      <div style={{ margin: "-16px -16px 0" }}>
+        <SeekerPaymentsPanel lang={lang} />
+      </div>
 
+      {/* ── LEGACY Job Seeker PRO (compatibility only — do not extend/promote) ── */}
+      <div style={{ fontSize: 11.5, fontWeight: 700, color: "#9a968d", background: "rgba(255,255,255,0.04)", border: "1px dashed rgba(255,255,255,0.15)", borderRadius: 10, padding: "10px 12px", lineHeight: 1.45 }}>
+        {lang === "en"
+          ? "Legacy PRO subscription below is kept for compatibility only. The pay-per-service model above is the current offer."
+          : "Доорх хуучин PRO багц нь зөвхөн нийцтэй байдлын үүднээс үлдээгдсэн. Дээрх үйлчилгээ тус бүрээр төлөх загвар нь одоогийн санал."}
+      </div>
 
       {/* Үнийн санал харьцуулалт */}
 
@@ -11953,7 +11970,7 @@ function EmployerProfilePanel({
   );
 }
 
-function FinancePanel({ subscribed, onSubscribe, stages }) {
+function FinancePanel({ subscribed, onSubscribe, stages, planId = "free" }) {
 
   const { t, lang } = useLang();
 
@@ -11995,138 +12012,39 @@ function FinancePanel({ subscribed, onSubscribe, stages }) {
 
 
 
+  // Demo recruitment analytics (mock-derived; clearly labelled Demo data).
+  const monthlyBars = [
+    { label: "1-р", value: 0 }, { label: "2-р", value: 0 }, { label: "3-р", value: 0 },
+    { label: "4-р", value: 49999 }, { label: "5-р", value: 49999 }, { label: "6-р", value: 49999 },
+  ];
+
   return (
-
-    <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
-
-
-
-      {/* Stats */}
-
-      <div>
-
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--dim)", marginBottom: 10, letterSpacing: ".5px" }}>{t("spendReport")}</div>
-
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
-
-          <StatCard label={t("totalSpend")} value={`₮${totalSpend.toLocaleString()}`} sub={t("thisQuarter")} color="#FF6B35" />
-
-          <StatCard label={t("hiredCount")} value={hiredCount} sub={lang === "mn" ? "нэр дэвшигч" : "candidates"} color="#3DDC97" />
-
-          <StatCard label={t("costPerHire")} value={costPerHire ? `₮${costPerHire.toLocaleString()}` : "—"} sub={t("hireAvg")} color="#4FA3FF" />
-
-          <StatCard label={t("avgSalary")} value={avgSalary ? `₮${Math.round(avgSalary / 1000)}к` : "—"} sub={t("avgHireSalary")} color="#FFD23F" />
-
-        </div>
-
-      </div>
-
-
-
-      {/* Spend chart — simple bar */}
-
-      <div>
-
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--dim)", marginBottom: 12, letterSpacing: ".5px" }}>{t("monthlySpend")}</div>
-
-        <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 90 }}>
-
-          {["1-р сар","2-р сар","3-р сар","4-р сар","5-р сар","6-р сар"].map((m, i) => {
-
-            const vals = [0, 0, 0, 49999, 49999, 49999];
-
-            const max = 49999;
-
-            const h = max ? (vals[i] / max) * 72 : 4;
-
-            return (
-
-              <div key={m} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-
-                <div style={{
-
-                  width: "100%", height: h, borderRadius: 6,
-
-                  background: vals[i] ? "linear-gradient(180deg,#FF6B35,#c94f20)" : "rgba(255,255,255,0.06)",
-
-                  transition: "height .4s",
-
-                }} />
-
-                <span style={{ fontSize: 9.5, color: "var(--dim)", whiteSpace: "nowrap" }}>{m.replace("-р сар","")}-р</span>
-
-              </div>
-
-            );
-
-          })}
-
-        </div>
-
-      </div>
-
-
-
-      {/* Invoices */}
-
-      <div>
-
-        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--dim)", marginBottom: 10, letterSpacing: ".5px" }}>{t("invoices")}</div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-
-          {INVOICES.map(inv => (
-
-            <div key={inv.id} style={{
-
-              display: "flex", alignItems: "center",
-
-              background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
-
-              borderRadius: 14, padding: "12px 14px", gap: 12,
-
-            }}>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-
-                <div style={{ fontSize: 13, fontWeight: 700, color: "var(--ink)" }}>{inv.desc}</div>
-
-                <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 2 }}>{inv.id} · {inv.date}</div>
-
-              </div>
-
-              <div style={{ textAlign: "right", flexShrink: 0 }}>
-
-                <div style={{ fontSize: 14, fontWeight: 800, color: "var(--ink)" }}>₮{inv.amount.toLocaleString()}</div>
-
-                <div style={{ fontSize: 10.5, color: inv.paid ? "#3DDC97" : "#FF6B35", fontWeight: 700, marginTop: 2 }}>
-
-                  {inv.paid ? t("paid") : t("pending")}
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
-
-        </div>
-
-      </div>
-
-
-
-      {/* ── PRO болох ── */}
-
-      <PaymentGuide t={t} lang={lang} onGoPro={onSubscribe} />
-
-
-
+    <div style={{ padding: "16px 16px 32px", display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* 1. Subscription — this company's own plan (catalog + dev scenario) */}
+      <EmployerBillingOverview
+        lang={lang}
+        planId={planId}
+        onUpgrade={onSubscribe}   /* opens EmployerPlanSheet via showEmpPaywall */
+        onRenew={onSubscribe}
+      />
+
+      {/* 2. Plan Usage — allowances from catalog; usage not tracked */}
+      <EmployerUsagePanel lang={lang} planId={planId} />
+
+      {/* 3. Payments & Invoices — honest empty states, no fake production data */}
+      <EmployerInvoicePanel lang={lang} />
+
+      {/* 4. Recruitment Analytics — demo metrics, kept separate from billing */}
+      <RecruitmentAnalyticsPanel
+        lang={lang}
+        totalSpend={totalSpend}
+        hiredCount={hiredCount}
+        costPerHire={costPerHire}
+        avgSalary={avgSalary}
+        monthlyBars={monthlyBars}
+      />
     </div>
-
   );
-
 }
 
 
@@ -12819,6 +12737,14 @@ export default function App() {
   const [empSubscribed, setEmpSubscribed] = useState(false);
 
   const [showEmpPaywall, setShowEmpPaywall] = useState(false);
+
+  // Step 3 (dev): sandbox employer-plan checkout preview. Grants only a
+  // sandbox entitlement; does not touch empSubscribed / real access.
+  const [checkoutPlanId, setCheckoutPlanId] = useState(null);
+  const [sandboxEntitlement, setSandboxEntitlement] = useState(null);
+  // Step 4 (dev scenario only): displayed annual plan, default FREE. NOT real
+  // authorization — isolated from empSubscribed / Supabase / feature access.
+  const [empDevPlan, setEmpDevPlan] = useState("free");
 
   const [showEmpLogout, setShowEmpLogout] = useState(false);
   const [showEmpResetConfirm, setShowEmpResetConfirm] = useState(false);
@@ -13653,17 +13579,33 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
       {/* Employer paywall modal */}
 
       {showEmpPaywall && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 240, display: "flex", flexDirection: "column" }}>
+          {/* Legacy demo-gate notice: the 3-swipe limit is NOT the final quota */}
+          <div style={{ background: "#2a2205", borderBottom: "1px solid rgba(255,210,63,0.4)", color: "#FFD23F", fontSize: 11.5, fontWeight: 700, padding: "10px 16px", lineHeight: 1.4, zIndex: 241 }}>
+            ⚠️ {lang === "en"
+              ? "Legacy demo gate: the current 3-swipe limit is temporary and is not the final annual-plan allowance system."
+              : "Хуучин демо хязгаарлалт: одоогийн 3-swipe лимит нь түр зуурынх бөгөөд жилийн багцын эцсийн лимит систем биш."}
+          </div>
+          <div style={{ flex: 1, position: "relative" }}>
+            <EmployerPlanSheet
+              lang={lang}
+              currentPlanId={empDevPlan}
+              onDevPlanChange={(planId) => setEmpDevPlan(planId)}  /* dev scenario only; does NOT set empSubscribed */
+              onClose={() => setShowEmpPaywall(false)}
+            />
+          </div>
+        </div>
+      )}
 
-        <PaywallSheet
-
-          role="employer"
-
-          onSubscribe={() => { setEmpSubscribed(true); setShowEmpPaywall(false); }}
-
-          onClose={() => setShowEmpPaywall(false)}
-
+      {/* Step 3: sandbox employer-plan checkout preview (dev-only) */}
+      {checkoutPlanId && (
+        <PaymentFlow
+          kind="employer_plan"
+          itemId={checkoutPlanId}
+          lang={lang}
+          onEntitlement={(ent) => setSandboxEntitlement(ent)}
+          onClose={() => setCheckoutPlanId(null)}
         />
-
       )}
 
 
@@ -13678,6 +13620,21 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
             <button onClick={() => setTab("profile")} style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, padding: "8px 14px", color: "var(--ink)", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
               <ChevronLeft size={16} /> {lang === "en" ? "Profile" : lang === "ko" ? "프로필" : "Профайл"}
             </button>
+
+            {/* Step 3 dev entry: sandbox employer-plan checkout preview */}
+            <div style={{ marginTop: 12, background: "rgba(255,210,63,0.06)", border: "1px dashed rgba(255,210,63,0.4)", borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, color: "#FFD23F", marginBottom: 8 }}>
+                🧪 {lang === "en" ? "SANDBOX · DEVELOPMENT PREVIEW · NOT A REAL PAYMENT" : "САНДБОКС · ХӨГЖҮҮЛЭЛТИЙН УРЬДЧИЛСАН · БОДИТ ТӨЛБӨР БИШ"}
+              </div>
+              <button onClick={() => setCheckoutPlanId("professional")} style={{ background: "rgba(255,107,53,0.12)", border: "1px solid rgba(255,107,53,0.4)", borderRadius: 10, padding: "9px 14px", color: "#FF6B35", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+                {lang === "en" ? "Preview plan checkout (Professional)" : "Багцын төлбөрийн урьдчилсан харагдац (Professional)"}
+              </button>
+              {sandboxEntitlement && (
+                <div style={{ fontSize: 12, color: "#3DDC97", marginTop: 8 }}>
+                  ✓ {lang === "en" ? "Sandbox entitlement" : "Сандбокс эрх"}: {sandboxEntitlement.itemId} · {sandboxEntitlement.status}
+                </div>
+              )}
+            </div>
           </div>
 
           <FinancePanel
@@ -13687,6 +13644,8 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
             onSubscribe={() => setShowEmpPaywall(true)}
 
             stages={stages}
+
+            planId={empDevPlan}
 
           />
 
