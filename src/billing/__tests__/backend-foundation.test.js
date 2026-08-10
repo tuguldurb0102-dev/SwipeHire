@@ -16,6 +16,8 @@ import { EMPLOYER_PLANS, SEEKER_SERVICES } from "../catalog.js";
 const here = dirname(fileURLToPath(import.meta.url));
 const SQL = readFileSync(resolve(here, "../../../supabase/migrations/005_billing_foundation.sql"), "utf8");
 const SQL6 = readFileSync(resolve(here, "../../../supabase/migrations/006_billing_grants_fix.sql"), "utf8");
+const SQL7 = readFileSync(resolve(here, "../../../supabase/migrations/007_fix_order_function_ambiguity.sql"), "utf8");
+const SQL8 = readFileSync(resolve(here, "../../../supabase/migrations/008_fix_consume_ambiguity.sql"), "utf8");
 
 const BILLING_TABLES = [
   "billing_products", "billing_prices", "employer_subscriptions", "subscription_usage",
@@ -111,6 +113,22 @@ describe("006 grants fix — least privilege re-asserted", () => {
     expect(SQL6).toMatch(/grant execute on function public\.create_payment_order_request\([^)]*\) to authenticated/i);
     expect(SQL6).toMatch(/revoke all on function public\.consume_service_entitlement\(uuid\) from public, anon/i);
     expect(SQL6).toMatch(/grant execute on function public\.consume_service_entitlement\(uuid\) to authenticated/i);
+  });
+});
+
+describe("007/008 ambiguity fixes (regression guards)", () => {
+  it("007 recreates the order function with table-qualified idempotency lookup", () => {
+    expect(SQL7).toMatch(/create or replace function public\.create_payment_order_request/i);
+    expect(SQL7).toMatch(/from public\.payment_orders po/i);
+    expect(SQL7).toMatch(/po\.provider = p_provider/i);
+  });
+  it("008 recreates consume with #variable_conflict use_column", () => {
+    expect(SQL8).toMatch(/create or replace function public\.consume_service_entitlement/i);
+    expect(SQL8).toMatch(/#variable_conflict use_column/);
+  });
+  it("both fixes re-assert least-privilege grants", () => {
+    expect(SQL7).toMatch(/grant execute on function public\.create_payment_order_request\([^)]*\) to authenticated/i);
+    expect(SQL8).toMatch(/grant execute on function public\.consume_service_entitlement\(uuid\) to authenticated/i);
   });
 });
 

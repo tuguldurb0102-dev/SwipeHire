@@ -237,9 +237,19 @@ only when the order is already `paid` server-side.
 ### 8.11 Step 7B status
 - ✅ Edge Functions deployed; unauthenticated boundary verified live.
 - ✅ Flag-gated Supabase provider added + unit-tested (sandbox still default).
-- ⏳ Remaining: end-to-end happy-path with a real authenticated user (sign in →
-  create order → server-verified paid → entitlement granted → single-use
-  consume), cross-tenant RLS-as-user checks, then flip the flag once verified.
+- ✅ **End-to-end live DB test PASSED** (2026-08-10) against the deployed
+  functions, run as a real test user via a transactional SQL fixture:
+  server-derived price (3,000), idempotent order, Enterprise rejected, grant
+  idempotency (one entitlement per order), single-use consume (second blocked),
+  negative usage rejected. The fixture creates and cleans up its own test user.
+- 🐞 The live run surfaced two real bugs in 005's functions — RETURNS TABLE OUT
+  variables colliding with same-named table columns (`provider`, then
+  `status`/`consumed_quantity`/`quantity`). Fixed forward in `007` (qualify the
+  idempotency lookup) and `008` (`#variable_conflict use_column`). Both applied;
+  the E2E test then passed clean.
+- ⏳ Remaining before switching the flag: cross-tenant RLS-as-user reads via a
+  real browser session, employer-plan happy path (needs a company), then set
+  `VITE_BILLING_BACKEND=supabase` once the UI path is verified end-to-end.
 
 ## 9. Remaining launch blockers
 
