@@ -53,3 +53,6 @@ Thumbs.db
 *.log
 npm-debug.log*
 yarn-error.log*
+
+# Supabase CLI local link state
+supabase/.temp/

@@ -121,10 +121,120 @@ No duplicate of existing tables.
 
 ---
 
-## 8. Remaining launch blockers
+## 8. Backend foundation (Step 7A — created, NOT applied)
 
-1. Supabase restored → apply `005_billing.sql`, deploy payment Edge Functions.
-2. At least one real provider configured + verified server-side.
-3. App-store billing (Apple IAP / Google Play) policy decision & integration.
-4. Usage counters before any plan limit is enforced (none exist today).
-5. Real invoices/receipts replacing the mock `INVOICES`.
+Migration `supabase/migrations/005_billing_foundation.sql` adds the secure
+backend. It has been written and statically verified (30 assertions in
+`src/billing/__tests__/backend-foundation.test.js`) but **not applied** —
+Supabase is not linked and there is no local DB in this environment.
+
+### 8.1 Tables
+`billing_products`, `billing_prices` (server catalog) · `employer_subscriptions`
+· `subscription_usage` · `payment_orders` · `payment_transactions` ·
+`job_seeker_purchases` · `entitlements` · `invoices` · `refunds` ·
+`payment_events`.
+
+### 8.2 RLS ownership model
+RLS is enabled on all 11 tables with **default-deny writes** (no
+INSERT/UPDATE/DELETE policies exist). Reads only:
+- Catalog: public read of `active` rows.
+- User-scoped (`user_id = auth.uid()`): own payment orders, job-seeker
+  purchases, user entitlements, invoices, and (via parent order) transactions/
+  refunds.
+- Company-scoped: the caller must **own** the company. There is **no
+  company_memberships table** in this schema, so access uses the existing
+  `public.owns_company(uuid)` helper — the requested `owner/admin/billing_admin`
+  membership roles do not exist and were not invented.
+- Staff: `public.is_admin()` (from `profiles.role = 'admin'`).
+- `payment_transactions.provider_payload` and `payment_events` are never
+  client-readable (admin-only).
+
+### 8.3 Service-role boundary
+All sensitive writes happen through the service role (which bypasses RLS) and
+four SECURITY DEFINER functions with pinned `search_path`, `PUBLIC` execute
+revoked:
+- `create_payment_order_request` — granted to `authenticated`.
+- `consume_service_entitlement` — granted to `authenticated`.
+- `grant_verified_entitlement` — **service-role only** (no `authenticated`
+  grant).
+- `increment_subscription_usage` — **service-role only**.
+
+### 8.4 Price validation flow
+Client sends only a product **code** + optional company + idempotency key. The
+DB function looks up the active `billing_prices.amount` server-side; there is no
+`p_amount` parameter anywhere. Enterprise has **no price row** and is explicitly
+rejected from automated checkout.
+
+### 8.5 Idempotency strategy
+`payment_orders` has a unique index on `(user_id, provider, idempotency_key)`.
+`create_payment_order_request` returns the existing order on a repeat key.
+`payment_events` de-dupes provider events by `(provider, provider_event_id)`.
+
+### 8.6 Entitlement grant flow
+`grant_verified_entitlement(order)` runs only when `order.status = 'paid'`, is
+idempotent via `entitlements.unique(source_type, source_id)`, and creates either
+an active `employer_subscriptions` row (+ company entitlement) or a
+`job_seeker_purchases` row (+ user service-credit entitlement).
+
+### 8.7 Credit consumption flow
+`consume_service_entitlement` locks the row (`for update`), verifies it is an
+active, unexpired, unrevoked, user-owned credit with `consumed_quantity <
+quantity`, then atomically increments and flips to `used`. Single-use is
+enforced in SQL.
+
+### 8.8 Refund / revocation flow
+`refunds` records provider refund lifecycle; a refunded order should drive its
+entitlement `status` to `revoked`/`refunded` (wired in a later step alongside
+the refund Edge Function).
+
+### 8.9 Provider status
+Only `sandbox` is enabled in `create-payment-order`. `verify-payment` returns
+`provider_not_configured` (HTTP 501) for qpay/socialpay/storepay/card/apple_iap/
+play_billing and does **not** fabricate a paid status for sandbox — it grants
+only when the order is already `paid` server-side.
+
+### 8.10 Applied / verification status (updated 2026-08-10)
+- Supabase project: **LINKED** to a fresh project (ref `eltwjnnoiblmpsvensas`).
+- **Migration history cleanup:** the repo previously carried two incompatible
+  schemas — `001_initial`/`002_tighten_rls` were an abandoned prototype (tables
+  `seeker_profiles`, `skill_tests`, a `profiles` **without** `status`, …) that
+  conflicted with the production schema in `003`. Applying them in sequence
+  failed at `004` (`column "status" does not exist`). `001`/`002` were
+  **deleted**; the base chain is now `003 → 004 → 005 (→ 006)`.
+- **Migration applied remotely: YES (2026-08-10).** Remote versions:
+  `003, 004, 005, 006`.
+- `006_billing_grants_fix.sql`: fixes an over-grant introduced by the schema
+  reset's `alter default privileges … grant … on functions to anon,
+  authenticated`. Re-asserts least privilege so the service-role-only functions
+  are not client-callable.
+- **Live verification (SQL Editor): PASS**
+  - 11 billing tables present; RLS enabled on all 11.
+  - 10 products, 9 active prices; `professional` = 3,990,000; Enterprise has
+    **no** price row.
+  - 4 functions are `SECURITY DEFINER`.
+  - Post-006 execute privileges: `create_payment_order_request` +
+    `consume_service_entitlement` → authenticated only; `grant_verified_
+    entitlement` + `increment_subscription_usage` → **neither anon nor
+    authenticated** (service-role only). anon cannot execute any.
+- Static SQL verification: **PASS** (33 assertions).
+- Type generation: **DONE** → `src/billing/db-types.ts` (all 11 tables + 4
+  functions present).
+- Behavioural RLS-as-user tests (create order / consume once / cross-tenant
+  reads): **not yet run live** — deferred to Step 7B via the Edge Functions.
+- Edge Functions: **not deployed yet** (scaffolds exist; need secrets set).
+- Frontend still uses the sandbox path unchanged; no production UI wired.
+
+## 9. Remaining launch blockers
+
+1. Link Supabase, apply `005_billing_foundation.sql`, deploy the three Edge
+   Functions (`create-payment-order`, `verify-payment`, `consume-entitlement`).
+2. Run live RLS/function tests (pgTAP) against a real DB.
+3. Generate DB TypeScript types.
+4. At least one real provider configured + verified server-side.
+5. App-store billing (Apple IAP / Google Play) policy decision & integration.
+6. Usage counters wired to `increment_subscription_usage` before enforcing any
+   plan limit.
+7. Real invoices/receipts replacing the mock `INVOICES`; refund→revocation
+   wiring.
+8. Step 7B: point the frontend adapter at the backend behind a flag, keeping
+   sandbox as default until verified.
