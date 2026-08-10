@@ -10,7 +10,7 @@ import EmployerInvoicePanel from "./src/components/billing/EmployerInvoicePanel.
 import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnalyticsPanel.jsx";
 import { isConfigured as SUPABASE_CONFIGURED } from "./src/services/supabase/client.js";
 import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/services/auth.service.js";
-import { getCurrentProfile, updateCandidateProfile } from "./src/services/profile.service.js";
+import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile } from "./src/services/profile.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 
 import {
@@ -7807,6 +7807,34 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [published]);
 
+  // Phase 2b: load the candidate profile from the DB on mount (returning user).
+  useEffect(() => {
+    if (!SUPABASE_CONFIGURED) return;
+    let cancelled = false;
+    getCandidateProfile().then((row) => {
+      if (cancelled || !row) return;
+      setF((prev) => ({
+        ...prev,
+        name: row.full_name ?? prev.name,
+        age: row.age != null ? String(row.age) : prev.age,
+        gender: row.gender ?? prev.gender,
+        category: row.category ?? prev.category,
+        location: row.location ?? prev.location,
+        phone: row.phone ?? prev.phone,
+        email: row.email ?? prev.email,
+        about: row.about ?? prev.about,
+        experience: row.experience?.length ? row.experience : prev.experience,
+        education: row.education?.length ? row.education : prev.education,
+        skills: row.skills?.length ? row.skills : prev.skills,
+        salary: row.salary_expectation != null ? String(row.salary_expectation) : prev.salary,
+        availableFrom: row.available_from ?? prev.availableFrom,
+      }));
+      if (row.published) setPublished(true);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const TOTAL = 9;
 
 
@@ -12809,6 +12837,39 @@ export default function App() {
   // ── Persist App state to localStorage on change ──────────────────────────────
   useEffect(() => { LS.set("swipehire_role", role); }, [role]);
   useEffect(() => { LS.set("swipehire_emp", { submitted: empSubmitted, verified: empVerified, verifData: empVerifData }); }, [empSubmitted, empVerified, empVerifData]);
+
+  // Phase 2c: sync employer profile to the DB when it changes (configured only).
+  // updateEmployerProfile whitelists fields (logo/trustLevel are ignored).
+  useEffect(() => {
+    if (!AUTH_ENABLED || !empVerifData) return;
+    const id = setTimeout(() => { updateEmployerProfile(empVerifData).catch(() => {}); }, 700);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [empVerifData]);
+
+  // Phase 2d: load employer profile from the DB when signed in as an employer.
+  useEffect(() => {
+    if (!AUTH_ENABLED || role !== "employer") return;
+    getEmployerProfile().then((row) => {
+      if (!row) return;
+      setEmpVerifData((prev) => ({
+        ...(prev || {}),
+        name: row.company_name ?? prev?.name,
+        regNum: row.reg_number ?? prev?.regNum,
+        email: row.email ?? prev?.email,
+        phone: row.phone ?? prev?.phone,
+        hrName: row.hr_name ?? prev?.hrName,
+        website: row.website ?? prev?.website,
+        industry: row.industry ?? prev?.industry,
+        headcount: row.headcount ?? prev?.headcount,
+        salaryMin: row.salary_min ?? prev?.salaryMin,
+        salaryMax: row.salary_max ?? prev?.salaryMax,
+        selectedProfs: row.selected_professions?.length ? row.selected_professions : (prev?.selectedProfs || []),
+      }));
+      setEmpSubmitted(true);
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
   useEffect(() => { LS.set("swipehire_saved", [...saved]); }, [saved]);
   useEffect(() => { LS.set("swipehire_stages", stages); }, [stages]);
   useEffect(() => { LS.set("swipehire_notes", notes); }, [notes]);

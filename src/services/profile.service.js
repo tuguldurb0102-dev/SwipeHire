@@ -102,6 +102,40 @@ export async function updateEmployerProfile(fields) {
   }
 }
 
+/** The caller's own candidate profile row, or null if none yet. */
+export async function getCandidateProfile() {
+  try {
+    const supabase = requireClient();
+    const uid = await currentUserId();
+    const { data, error } = await supabase
+      .from("candidate_profiles")
+      .select("*")
+      .eq("id", uid)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
+/** The caller's own employer profile row, or null if none yet. */
+export async function getEmployerProfile() {
+  try {
+    const supabase = requireClient();
+    const uid = await currentUserId();
+    const { data, error } = await supabase
+      .from("employer_profiles")
+      .select("*")
+      .eq("id", uid)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
 /** Published candidates visible to employers (RLS returns only safe columns). */
 export async function listPublishedCandidates({ limit = 50 } = {}) {
   try {
