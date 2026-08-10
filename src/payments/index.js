@@ -10,12 +10,15 @@
  * PaymentProvider implementation.
  */
 import { SandboxProvider } from "./sandboxProvider.js";
+import { SupabaseProvider } from "./supabaseProvider.js";
 
 const sandbox = new SandboxProvider();
+const supabaseBackend = new SupabaseProvider();
 
 /** Declared future providers — none connected. Do not present these as live. */
 export const PROVIDER_REGISTRY = Object.freeze({
   sandbox,
+  supabase: supabaseBackend,
   qpay:       { id: "qpay",       label: "QPay",                connected: false },
   socialpay:  { id: "socialpay",  label: "SocialPay",           connected: false },
   storepay:   { id: "storepay",   label: "StorePay",            connected: false },
@@ -24,8 +27,14 @@ export const PROVIDER_REGISTRY = Object.freeze({
   play_billing:{ id: "play_billing", label: "Google Play Billing", connected: false },
 });
 
-/** The provider used in development. Real deployments override via config. */
-export const activeProvider = sandbox;
+/**
+ * The active provider. Sandbox is the DEFAULT — the live Supabase backend is
+ * opt-in via VITE_BILLING_BACKEND=supabase, so nothing switches over until the
+ * live path is verified (Step 7B). Any other value falls back to sandbox.
+ */
+const BACKEND = (typeof import.meta !== "undefined" && import.meta.env?.VITE_BILLING_BACKEND) || "sandbox";
+export const activeProvider = BACKEND === "supabase" ? supabaseBackend : sandbox;
+export const backendMode = BACKEND === "supabase" ? "supabase" : "sandbox";
 
 export function getProvider(id) {
   const p = PROVIDER_REGISTRY[id];
@@ -44,4 +53,5 @@ export function listProviders() {
 }
 
 export { SandboxProvider } from "./sandboxProvider.js";
+export { SupabaseProvider } from "./supabaseProvider.js";
 export { PaymentProvider, isTerminalStatus, PROVIDER_CAPABILITIES } from "./PaymentProvider.js";

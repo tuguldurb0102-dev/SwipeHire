@@ -221,8 +221,25 @@ only when the order is already `paid` server-side.
   functions present).
 - Behavioural RLS-as-user tests (create order / consume once / cross-tenant
   reads): **not yet run live** — deferred to Step 7B via the Edge Functions.
-- Edge Functions: **not deployed yet** (scaffolds exist; need secrets set).
+- Edge Functions: **DEPLOYED (2026-08-10)** — `create-payment-order`,
+  `verify-payment`, `consume-entitlement` on project `eltwjnnoiblmpsvensas`.
+  Supabase auto-injects `SUPABASE_URL/ANON_KEY/SERVICE_ROLE_KEY`; no secrets
+  committed. Live boundary check: an unauthenticated call to
+  `create-payment-order` returns HTTP 401 `{"error":"not_authenticated"}` — the
+  auth guard works over HTTP and creates no order.
+- Backend adapter: `src/payments/supabaseProvider.js` implements the
+  `PaymentProvider` interface against the Edge Functions/RPCs. It is **opt-in**
+  via `VITE_BILLING_BACKEND=supabase`; the sandbox remains the default provider,
+  so the UI and existing tests are unaffected until the live path is verified
+  end-to-end.
 - Frontend still uses the sandbox path unchanged; no production UI wired.
+
+### 8.11 Step 7B status
+- ✅ Edge Functions deployed; unauthenticated boundary verified live.
+- ✅ Flag-gated Supabase provider added + unit-tested (sandbox still default).
+- ⏳ Remaining: end-to-end happy-path with a real authenticated user (sign in →
+  create order → server-verified paid → entitlement granted → single-use
+  consume), cross-tenant RLS-as-user checks, then flip the flag once verified.
 
 ## 9. Remaining launch blockers
 
