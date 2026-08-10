@@ -8,6 +8,10 @@ import EmployerBillingOverview from "./src/components/billing/EmployerBillingOve
 import EmployerUsagePanel from "./src/components/billing/EmployerUsagePanel.jsx";
 import EmployerInvoicePanel from "./src/components/billing/EmployerInvoicePanel.jsx";
 import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnalyticsPanel.jsx";
+import { isConfigured as SUPABASE_CONFIGURED } from "./src/services/supabase/client.js";
+import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/services/auth.service.js";
+import { getCurrentProfile } from "./src/services/profile.service.js";
+import AuthGate from "./src/components/auth/AuthGate.jsx";
 
 import {
 
@@ -12701,6 +12705,45 @@ export default function App() {
   // ── App-level state (localStorage-backed) ───────────────────────────────────
   const [role, setRole] = useState(() => LS.get("swipehire_role", null));
 
+  // ── Real auth (dual-mode) ────────────────────────────────────────────────
+  // When Supabase is configured we require a real session and derive the role
+  // from profiles.role. When it is NOT configured (e.g. the public demo build)
+  // this whole layer is inert and the existing demo flow runs unchanged.
+  const AUTH_ENABLED = SUPABASE_CONFIGURED;
+  const [authSession, setAuthSession] = useState(null);
+  const [authReady, setAuthReady] = useState(!AUTH_ENABLED);
+
+  useEffect(() => {
+    if (!AUTH_ENABLED) return;
+    let unsub = () => {};
+    getSession()
+      .then((s) => { setAuthSession(s); })
+      .catch(() => { setAuthSession(null); })
+      .finally(() => setAuthReady(true));
+    unsub = onAuthStateChange((s) => setAuthSession(s));
+    return () => unsub();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Resolve the app role from the authenticated profile (candidate → seeker).
+  useEffect(() => {
+    if (!AUTH_ENABLED) return;
+    if (!authSession) { setRole(null); return; }
+    getCurrentProfile()
+      .then((p) => {
+        const r = p?.role;
+        if (r === "employer") setRole("employer");
+        else if (r === "candidate") setRole("seeker");
+      })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authSession]);
+
+  const doSignOut = useCallback(async () => {
+    if (AUTH_ENABLED) { try { await authSignOut(); } catch { /* ignore */ } }
+    setRole(null);
+  }, [AUTH_ENABLED]);
+
   const _empRaw = LS.get("swipehire_emp", {});
   const [empSubmitted, setEmpSubmitted] = useState(() => !!_empRaw.submitted);
   const [empVerified, setEmpVerified] = useState(() => !!_empRaw.verified);
@@ -13110,6 +13153,27 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
   // 0) Splash screen
   if (showSplash) return <SplashScreen onDone={() => setShowSplash(false)} />;
+
+  // 0a) Real-auth gate (only when Supabase is configured). While the session is
+  // resolving, show a minimal loader; with no session, show the AuthGate.
+  if (AUTH_ENABLED && !authReady) {
+    return (
+      <LangCtx.Provider value={langCtxVal}>
+        <div className="app"><Style />
+          <div style={{ minHeight: "100dvh", display: "grid", placeItems: "center", color: "var(--dim,#9a968d)" }}>…</div>
+        </div>
+      </LangCtx.Provider>
+    );
+  }
+  if (AUTH_ENABLED && !authSession) {
+    return (
+      <LangCtx.Provider value={langCtxVal}>
+        <div className="app"><Style />
+          <AuthGate lang={lang} />
+        </div>
+      </LangCtx.Provider>
+    );
+  }
 
   // 0b) Seeker intro screen (shown before role is committed)
   if (showSeekerIntro) {
