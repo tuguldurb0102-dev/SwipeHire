@@ -247,9 +247,18 @@ only when the order is already `paid` server-side.
   `status`/`consumed_quantity`/`quantity`). Fixed forward in `007` (qualify the
   idempotency lookup) and `008` (`#variable_conflict use_column`). Both applied;
   the E2E test then passed clean.
-- ⏳ Remaining before switching the flag: cross-tenant RLS-as-user reads via a
-  real browser session, employer-plan happy path (needs a company), then set
-  `VITE_BILLING_BACKEND=supabase` once the UI path is verified end-to-end.
+- ✅ **Employer + cross-tenant live test PASSED** (2026-08-10): employer-plan
+  order priced server-side at 3,990,000; verified grant creates an active
+  `employer_subscriptions` row; `owns_company()` (the predicate behind every
+  company-scoped RLS read) is true for the owner and false for another
+  employer; a non-owner is rejected from ordering for that company. Fixture
+  self-cleans.
+- ⏳ Remaining (Step 7C — deliberately NOT done yet): the app does not wire
+  Supabase auth into the billing UI, so setting `VITE_BILLING_BACKEND=supabase`
+  now would make PaymentFlow call the Edge Functions without a user session and
+  get 401, breaking the sandbox demo. The flag flip must come together with
+  app-level auth wiring for the billing flow — a separate step. Sandbox stays
+  the default until then.
 
 ## 9. Remaining launch blockers
 
