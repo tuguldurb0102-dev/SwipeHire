@@ -10,7 +10,7 @@ import EmployerInvoicePanel from "./src/components/billing/EmployerInvoicePanel.
 import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnalyticsPanel.jsx";
 import { isConfigured as SUPABASE_CONFIGURED } from "./src/services/supabase/client.js";
 import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/services/auth.service.js";
-import { getCurrentProfile } from "./src/services/profile.service.js";
+import { getCurrentProfile, updateCandidateProfile } from "./src/services/profile.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 
 import {
@@ -7794,6 +7794,18 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
     } catch {}
   }, [f]);
   useEffect(() => { try { localStorage.setItem("swipehire_seeker_meta", JSON.stringify({ published, verified })); } catch {} }, [published, verified]);
+
+  // Phase 2: when Supabase is configured, sync the candidate profile to the DB
+  // on publish/unpublish. The service whitelists fields and never persists CV
+  // bytes. In demo mode (not configured) this is inert.
+  useEffect(() => {
+    if (!SUPABASE_CONFIGURED) return;
+    const id = setTimeout(() => {
+      updateCandidateProfile({ ...f, published }).catch(() => {});
+    }, 700);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [published]);
 
   const TOTAL = 9;
 
