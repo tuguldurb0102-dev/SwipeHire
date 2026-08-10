@@ -11,7 +11,10 @@ import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnaly
 import { isConfigured as SUPABASE_CONFIGURED } from "./src/services/supabase/client.js";
 import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/services/auth.service.js";
 import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile, listPublishedCandidates } from "./src/services/profile.service.js";
+import { getOrCreateCompany } from "./src/services/company.service.js";
+import { listActiveJobs, createJob } from "./src/services/job.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
+import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 
 import {
 
@@ -6968,11 +6971,28 @@ function JobFeed() {
 
   const startX = useRef(0);
 
+  // Phase 3b: load real active jobs when Supabase is configured. Mapped onto a
+  // mock template so every field the card reads exists (no undefined arrays).
+  const [liveJobs, setLiveJobs] = useState(null);
+  useEffect(() => {
+    if (!SUPABASE_CONFIGURED) return;
+    listActiveJobs({ limit: 100 }).then((rows) => {
+      const base = JOBS[0];
+      const fmt = (j) => { const a = j.salary_min, b = j.salary_max; return a && b ? `${a.toLocaleString()}–${b.toLocaleString()}` : a ? `${a.toLocaleString()}+` : b ? b.toLocaleString() : "—"; };
+      const mapped = (rows || []).map((j) => ({
+        ...base, id: j.id, role: j.title || base.role, type: j.category || base.type,
+        location: j.location || base.location, about: j.description || "", salary: fmt(j),
+        company: "", logo: (j.title || "?").slice(0, 2).toUpperCase(), skills: [], benefits: [], urgent: false,
+      }));
+      if (mapped.length) setLiveJobs(mapped);
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const jobs = liveJobs || JOBS;
 
+  const job = jobs[idx];
 
-  const job = JOBS[idx];
-
-  const done = idx >= JOBS.length;
+  const done = idx >= jobs.length;
 
   const swipeCount = gone.length;
 
@@ -7142,7 +7162,7 @@ function JobFeed() {
 
             {/* Next card preview */}
 
-            {JOBS[idx + 1] && (
+            {jobs[idx + 1] && (
 
               <div style={{
 
@@ -7156,7 +7176,7 @@ function JobFeed() {
 
               }}>
 
-                <JobCard job={JOBS[idx + 1]} mini />
+                <JobCard job={jobs[idx + 1]} mini />
 
               </div>
 
@@ -12752,6 +12772,8 @@ export default function App() {
   const AUTH_ENABLED = SUPABASE_CONFIGURED;
   const [authSession, setAuthSession] = useState(null);
   const [authReady, setAuthReady] = useState(!AUTH_ENABLED);
+  const [companyId, setCompanyId] = useState(null); // resolved employer company (Phase 3b)
+  const [showPostJob, setShowPostJob] = useState(false);
 
   useEffect(() => {
     if (!AUTH_ENABLED) return;
@@ -12896,6 +12918,19 @@ export default function App() {
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
+
+  // Phase 3b: ensure the employer has a company (needed to post jobs + billing).
+  useEffect(() => {
+    if (!AUTH_ENABLED || role !== "employer") return;
+    getOrCreateCompany({
+      name: empVerifData?.name,
+      regNumber: empVerifData?.regNum,
+      website: empVerifData?.website,
+      industry: empVerifData?.industry,
+      headcount: empVerifData?.headcount,
+    }).then((c) => { if (c?.id) setCompanyId(c.id); }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role, empVerifData?.name]);
   useEffect(() => { LS.set("swipehire_saved", [...saved]); }, [saved]);
   useEffect(() => { LS.set("swipehire_stages", stages); }, [stages]);
   useEffect(() => { LS.set("swipehire_notes", notes); }, [notes]);
@@ -13758,6 +13793,17 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
             />
           </div>
         </div>
+      )}
+
+      {/* Phase 3b: post a real job (only when the company is resolved) */}
+      {AUTH_ENABLED && role === "employer" && companyId && (
+        <button onClick={() => setShowPostJob(true)} aria-label="Post job"
+          style={{ position: "fixed", right: 18, bottom: 88, zIndex: 60, width: 56, height: 56, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#FF6B35,#E85400)", color: "#fff", fontSize: 28, fontWeight: 800, cursor: "pointer", boxShadow: "0 6px 20px rgba(255,107,53,0.5)" }}>+</button>
+      )}
+      {showPostJob && (
+        <PostJobSheet lang={lang} companyId={companyId}
+          onClose={() => setShowPostJob(false)}
+          onPosted={() => {}} />
       )}
 
       {/* Step 3: sandbox employer-plan checkout preview (dev-only) */}
