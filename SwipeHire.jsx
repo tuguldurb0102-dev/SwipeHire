@@ -10,7 +10,7 @@ import EmployerInvoicePanel from "./src/components/billing/EmployerInvoicePanel.
 import RecruitmentAnalyticsPanel from "./src/components/billing/RecruitmentAnalyticsPanel.jsx";
 import { isConfigured as SUPABASE_CONFIGURED } from "./src/services/supabase/client.js";
 import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/services/auth.service.js";
-import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile } from "./src/services/profile.service.js";
+import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile, listPublishedCandidates } from "./src/services/profile.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 
 import {
@@ -12867,6 +12867,32 @@ export default function App() {
         selectedProfs: row.selected_professions?.length ? row.selected_professions : (prev?.selectedProfs || []),
       }));
       setEmpSubmitted(true);
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
+
+  // Phase 3: employers see REAL published candidates from the DB. Loaded into
+  // livePool (merged ahead of the mock fixtures). Inert in demo mode.
+  useEffect(() => {
+    if (!AUTH_ENABLED || role !== "employer") return;
+    listPublishedCandidates({ limit: 100 }).then((rows) => {
+      const mapped = (rows || []).map((row) => ({
+        id: row.id,
+        name: row.full_name || "—",
+        age: null,
+        location: row.location || "",
+        category: row.category || "",
+        years: Array.isArray(row.experience) ? row.experience.length : 0,
+        salary: row.salary_expectation || 0,
+        available: true,
+        availableFrom: row.available_from || "",
+        about: row.about || "",
+        skills: [...(row.skills || []), ...(row.custom_skills || [])],
+        experience: row.experience || [],
+        education: row.education || [],
+        live: true,
+      }));
+      if (mapped.length) setLivePool(mapped);
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role]);
