@@ -18,6 +18,7 @@ import { createConversation } from "./src/services/message.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 import ChatPanel from "./src/components/chat/ChatPanel.jsx";
+import ApplicantsPanel from "./src/components/employer/ApplicantsPanel.jsx";
 
 import {
 
@@ -12782,6 +12783,7 @@ export default function App() {
   const [companyId, setCompanyId] = useState(null); // resolved employer company (Phase 3b)
   const [showPostJob, setShowPostJob] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showApplicants, setShowApplicants] = useState(false);
 
   useEffect(() => {
     if (!AUTH_ENABLED) return;
@@ -13828,6 +13830,17 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
         <PostJobSheet lang={lang} companyId={companyId}
           onClose={() => setShowPostJob(false)}
           onPosted={() => {}} />
+      )}
+
+      {/* Phase 3d: applicants (employer) */}
+      {AUTH_ENABLED && role === "employer" && (
+        <button onClick={() => setShowApplicants(true)} aria-label="Applicants"
+          style={{ position: "fixed", right: 18, bottom: 216, zIndex: 60, width: 56, height: 56, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 22, cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>📋</button>
+      )}
+      {showApplicants && AUTH_ENABLED && (
+        <ApplicantsPanel lang={lang}
+          onMessage={(cid) => { if (cid) createConversation({ otherUserId: cid }).catch(() => {}); setShowApplicants(false); setShowChat(true); }}
+          onClose={() => setShowApplicants(false)} />
       )}
 
       {/* Phase 3e: messages (employer) */}

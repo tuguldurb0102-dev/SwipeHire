@@ -48,6 +48,24 @@ export async function listMyApplications() {
 }
 
 /** Employer: applications to a job my company owns (RLS-restricted). */
+/**
+ * Applications to the caller's own company jobs. RLS (app_read) already scopes
+ * rows to jobs the caller's company owns, so no company filter is needed here.
+ */
+export async function listCompanyApplications() {
+  try {
+    const supabase = requireClient();
+    const { data, error } = await supabase
+      .from("applications")
+      .select("id, job_id, candidate_id, status, cover_letter, created_at, jobs(title)")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
 export async function listJobApplications(jobId) {
   try {
     const supabase = requireClient();
