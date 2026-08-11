@@ -12,7 +12,7 @@
 import React, { useState } from "react";
 import { signIn, signUp, resetPassword } from "../../services/auth.service.js";
 
-export default function AuthGate({ lang = "mn" }) {
+export default function AuthGate({ lang = "mn", theme = "dark", onToggleTheme }) {
   const L = (mn, en) => (lang === "en" ? en : mn);
 
   const [mode, setMode] = useState("signin"); // signin | signup | reset
@@ -67,6 +67,12 @@ export default function AuthGate({ lang = "mn" }) {
 
   return (
     <div style={S.wrap}>
+      {onToggleTheme && (
+        <button onClick={onToggleTheme} aria-label="Theme" style={{
+          position: "absolute", top: 16, right: 16, width: 36, height: 36, borderRadius: 10,
+          border: "1px solid var(--hair-2)", background: "var(--surface)", cursor: "pointer", fontSize: 16,
+        }}>{theme === "dark" ? "☀️" : "🌙"}</button>
+      )}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
         <div style={{ width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#FF6B35,#E85400)", display: "grid", placeItems: "center", margin: "0 auto 14px", fontSize: 28 }}>🎯</div>
         <div style={{ fontSize: 26, fontWeight: 900, color: "var(--ink,#f6f4ef)", fontFamily: "'Barlow Condensed',sans-serif" }}>SwipeHire</div>
