@@ -5515,7 +5515,7 @@ function SeekerIntroScreen({ onStart, onDemo, onBack }) {
 
 function RoleSelect({ onSelect }) {
 
-  const { t, lang, toggleLang, theme, toggleTheme } = useLang();
+  const { t, lang, toggleLang } = useLang();
 
   return (
 
@@ -5525,21 +5525,15 @@ function RoleSelect({ onSelect }) {
         <BrandLogo size={34} />
       </div>
 
-      {/* Theme + Language toggle */}
-
-      <button onClick={toggleTheme} aria-label="Theme" style={{
-        position: "absolute", top: 20, right: 66,
-        width: 34, height: 34, borderRadius: 10, border: "1px solid var(--hair-2)",
-        background: "var(--surface)", cursor: "pointer", fontSize: 15,
-      }}>{theme === "dark" ? "☀️" : "🌙"}</button>
+      {/* Language toggle */}
 
       <button onClick={toggleLang} style={{
 
         position: "absolute", top: 20, right: 20,
 
-        padding: "5px 12px", borderRadius: 10, border: "1px solid var(--hair-2)",
+        padding: "5px 12px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.2)",
 
-        background: "var(--surface)", color: "var(--ink)",
+        background: "rgba(255,255,255,0.08)", color: "var(--ink)",
 
         fontSize: 13, fontWeight: 700, cursor: "pointer", letterSpacing: ".5px",
 
@@ -7799,7 +7793,7 @@ function SkillTestStep({ f, upd }) {
 
 function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }) {
 
-  const { t, lang, toggleLang, theme, toggleTheme } = useLang();
+  const { t, lang, toggleLang } = useLang();
 
   const _lsGet = (k, fb) => { try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : fb; } catch { return fb; } };
 
@@ -8580,16 +8574,11 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
-          <button onClick={toggleTheme} aria-label="Theme" style={{
-            width: 26, height: 26, borderRadius: 8, border: "1px solid var(--hair-2)",
-            background: "var(--surface)", cursor: "pointer", fontSize: 12, marginRight: 6,
-          }}>{theme === "dark" ? "☀️" : "🌙"}</button>
-
           <button onClick={toggleLang} style={{
 
-            padding: "3px 9px", borderRadius: 8, border: "1px solid var(--hair-2)",
+            padding: "3px 9px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)",
 
-            background: "var(--surface)", color: "var(--ink)",
+            background: "rgba(255,255,255,0.07)", color: "var(--ink)",
 
             fontSize: 11, fontWeight: 700, cursor: "pointer",
 
@@ -12776,15 +12765,6 @@ export default function App() {
 
   const [lang, setLang] = useState(() => localStorage.getItem("swipehire_lang") || "mn");
 
-  // Theme: dark (brand default) or light. Applied globally via data-theme on the
-  // document root so the background and all token-based surfaces flip.
-  const [theme, setTheme] = useState(() => localStorage.getItem("swipehire_theme") || "dark");
-  useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
-    try { localStorage.setItem("swipehire_theme", theme); } catch {}
-  }, [theme]);
-  const toggleTheme = () => setTheme((tm) => (tm === "dark" ? "light" : "dark"));
-
   const t = useCallback((k) => STRINGS[lang]?.[k] ?? STRINGS.en?.[k] ?? STRINGS.mn[k] ?? k, [lang]);
 
   const toggleLang = () => setLang(l => {
@@ -13243,7 +13223,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
 
 
-  const langCtxVal = { lang, t, toggleLang, theme, toggleTheme };
+  const langCtxVal = { lang, t, toggleLang };
 
   const [dashStage, setDashStage] = useState(null); // dashboard stage drill-down
 
@@ -13363,7 +13343,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
     return (
       <LangCtx.Provider value={langCtxVal}>
         <div className="app"><Style />
-          <AuthGate lang={lang} theme={theme} onToggleTheme={toggleTheme} />
+          <AuthGate lang={lang} />
         </div>
       </LangCtx.Provider>
     );
@@ -13566,18 +13546,13 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
 
-          <button onClick={toggleTheme} aria-label="Theme" style={{
-            width: 34, height: 34, borderRadius: 8, border: "1px solid var(--hair-2)",
-            background: "var(--surface)", cursor: "pointer", fontSize: 14,
-          }}>{theme === "dark" ? "☀️" : "🌙"}</button>
-
           <button onClick={toggleLang} style={{
 
             height: 34, padding: "0 10px", borderRadius: 8,
 
-            border: "1px solid var(--hair-2)",
+            border: "1px solid rgba(255,255,255,0.13)",
 
-            background: "var(--surface)", color: "var(--ink)",
+            background: "rgba(255,255,255,0.07)", color: "var(--ink)",
 
             fontSize: 12, fontWeight: 700, cursor: "pointer", letterSpacing: ".3px",
 
@@ -14159,18 +14134,6 @@ function Style() {
 
 
       *{box-sizing:border-box;margin:0;padding:0}
-
-      /* ── Light theme overrides (higher specificity → win regardless of order) ── */
-      [data-theme="light"] body{ background:#ece9e3; }
-      [data-theme="light"] .app{
-        --bg:#ffffff; --bg-2:#f5f3ef; --ink:#1a1712; --ink-2:#3d3830; --dim:#6b665d;
-        --surface:rgba(0,0,0,.045); --surface-2:rgba(0,0,0,.07);
-        --surface-hi:linear-gradient(160deg,rgba(0,0,0,.05),rgba(0,0,0,.02));
-        --hair:rgba(0,0,0,.10); --hair-2:rgba(0,0,0,.16);
-        --sh-1:0 2px 8px rgba(0,0,0,.10);
-        --sh-2:0 8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.6);
-        --sh-3:0 16px 44px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.7);
-      }
 
       .app{
 
