@@ -59,6 +59,8 @@ export async function updateCandidateProfile(fields) {
       updated_at: new Date().toISOString(),
     };
     if (fields.avatarPath !== undefined) row.avatar_path = fields.avatarPath || null;
+    if (fields.cvPath !== undefined) row.cv_path = fields.cvPath || null;
+    if (fields.videoPath !== undefined) row.video_path = fields.videoPath || null;
     const { data, error } = await supabase
       .from("candidate_profiles")
       .upsert(row, { onConflict: "id" })

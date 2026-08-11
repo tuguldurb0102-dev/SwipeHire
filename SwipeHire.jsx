@@ -6690,7 +6690,7 @@ const blankForm = {
 
   skillTestScore: null, skillTestLevel: "", skillTestCompleted: false,
 
-  avatarPath: "",
+  avatarPath: "", cvPath: "", videoPath: "",
 
 };
 
@@ -7860,6 +7860,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
         salary: row.salary_expectation != null ? String(row.salary_expectation) : prev.salary,
         availableFrom: row.available_from ?? prev.availableFrom,
         avatarPath: row.avatar_path ?? prev.avatarPath,
+        cvPath: row.cv_path ?? prev.cvPath,
+        videoPath: row.video_path ?? prev.videoPath,
       }));
       if (row.published) setPublished(true);
     }).catch(() => {});
@@ -8827,6 +8829,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                   if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   const url = URL.createObjectURL(file);
                   upd({ videoMode: "record", videoFileName: file.name, videoFile: url });
+                  if (SUPABASE_CONFIGURED) uploadFile({ bucket: "videos", file }).then(({ path }) => upd({ videoPath: path })).catch(() => {});
                   flash("Бичлэг хадгалагдлаа ✓");
                   e.target.value = "";
                 }}
@@ -8854,6 +8857,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                   if (!chk.ok) { flash(chk.error); e.target.value = ""; return; }
                   const url = URL.createObjectURL(file);
                   upd({ videoMode: "upload", videoFileName: file.name, videoFile: url });
+                  if (SUPABASE_CONFIGURED) uploadFile({ bucket: "videos", file }).then(({ path }) => upd({ videoPath: path })).catch(() => {});
                   flash("Видео нэмэгдлээ ✓");
                   e.target.value = "";
                 }}
@@ -8932,6 +8936,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
                   const reader = new FileReader();
                   reader.onload = () => upd({ cvFile: file.name, cvFileData: reader.result });
                   reader.readAsDataURL(file);
+                  if (SUPABASE_CONFIGURED) uploadFile({ bucket: "cv-pdfs", file }).then(({ path }) => upd({ cvPath: path })).catch(() => {});
                   flash("CV нэмэгдлээ ✓");
                   e.target.value = "";
                 }}
