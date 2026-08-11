@@ -17,6 +17,7 @@ import { applyToJob, saveCandidate } from "./src/services/application.service.js
 import { createConversation } from "./src/services/message.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
+import ChatPanel from "./src/components/chat/ChatPanel.jsx";
 
 import {
 
@@ -12780,6 +12781,7 @@ export default function App() {
   const [authReady, setAuthReady] = useState(!AUTH_ENABLED);
   const [companyId, setCompanyId] = useState(null); // resolved employer company (Phase 3b)
   const [showPostJob, setShowPostJob] = useState(false);
+  const [showChat, setShowChat] = useState(false);
 
   useEffect(() => {
     if (!AUTH_ENABLED) return;
@@ -13377,9 +13379,18 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
             onLogout={() => {
               localStorage.removeItem("swipehire_seeker");
               localStorage.removeItem("swipehire_seeker_meta");
-              setRole(null);
+              if (AUTH_ENABLED) doSignOut(); else setRole(null);
             }}
           />
+
+          {/* Phase 3e: messages (seeker) */}
+          {AUTH_ENABLED && (
+            <button onClick={() => setShowChat(true)} aria-label="Messages"
+              style={{ position: "fixed", right: 18, bottom: 84, zIndex: 60, width: 54, height: 54, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 24, cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>💬</button>
+          )}
+          {showChat && AUTH_ENABLED && (
+            <ChatPanel lang={lang} myId={authSession?.user?.id} onClose={() => setShowChat(false)} />
+          )}
 
           {toast && <div className="toast" role="status"><Check size={16} /> {toast}</div>}
 
@@ -13817,6 +13828,15 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
         <PostJobSheet lang={lang} companyId={companyId}
           onClose={() => setShowPostJob(false)}
           onPosted={() => {}} />
+      )}
+
+      {/* Phase 3e: messages (employer) */}
+      {AUTH_ENABLED && role === "employer" && (
+        <button onClick={() => setShowChat(true)} aria-label="Messages"
+          style={{ position: "fixed", right: 18, bottom: 152, zIndex: 60, width: 56, height: 56, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 24, cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>💬</button>
+      )}
+      {showChat && AUTH_ENABLED && (
+        <ChatPanel lang={lang} myId={authSession?.user?.id} onClose={() => setShowChat(false)} />
       )}
 
       {/* Step 3: sandbox employer-plan checkout preview (dev-only) */}
