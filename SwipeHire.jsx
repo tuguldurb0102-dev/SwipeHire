@@ -13,6 +13,8 @@ import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/ser
 import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile, listPublishedCandidates } from "./src/services/profile.service.js";
 import { getOrCreateCompany } from "./src/services/company.service.js";
 import { listActiveJobs, createJob } from "./src/services/job.service.js";
+import { applyToJob, saveCandidate } from "./src/services/application.service.js";
+import { createConversation } from "./src/services/message.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 
@@ -7008,7 +7010,11 @@ function JobFeed() {
 
     }
 
-    if (dir === "right") setLiked((p) => [...p, job.id]);
+    if (dir === "right") {
+      setLiked((p) => [...p, job.id]);
+      // Phase 3c: a right-swipe is an application (configured mode only; real job ids).
+      if (SUPABASE_CONFIGURED && liveJobs) applyToJob({ jobId: job.id }).catch(() => {});
+    }
 
     else setDenied((p) => [...p, job.id]);
 
@@ -13128,6 +13134,13 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
     setSaved((s) => new Set(s).add(id));
 
     setStages((p) => ({ ...p, [id]: p[id] === "interview" || p[id] === "offer" || p[id] === "hired" ? p[id] : "contacted" }));
+
+    // Phase 3c: persist the relationship — save the candidate and open a
+    // conversation with them (configured mode only; id is a candidate user id).
+    if (AUTH_ENABLED && typeof id === "string") {
+      saveCandidate(id).catch(() => {});
+      createConversation({ otherUserId: id }).catch(() => {});
+    }
 
   };
 
