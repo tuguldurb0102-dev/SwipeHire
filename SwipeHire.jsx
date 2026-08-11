@@ -15,6 +15,7 @@ import { getOrCreateCompany } from "./src/services/company.service.js";
 import { listActiveJobs, createJob } from "./src/services/job.service.js";
 import { applyToJob, saveCandidate } from "./src/services/application.service.js";
 import { createConversation } from "./src/services/message.service.js";
+import { uploadFile, getPublicUrl } from "./src/services/storage.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 import ChatPanel from "./src/components/chat/ChatPanel.jsx";
@@ -6689,6 +6690,8 @@ const blankForm = {
 
   skillTestScore: null, skillTestLevel: "", skillTestCompleted: false,
 
+  avatarPath: "",
+
 };
 
 /* ── Ур чадварын тестийн асуултууд ────────────────── */
@@ -7856,6 +7859,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
         skills: row.skills?.length ? row.skills : prev.skills,
         salary: row.salary_expectation != null ? String(row.salary_expectation) : prev.salary,
         availableFrom: row.available_from ?? prev.availableFrom,
+        avatarPath: row.avatar_path ?? prev.avatarPath,
       }));
       if (row.published) setPublished(true);
     }).catch(() => {});
@@ -8133,7 +8137,20 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
             <div className="seeker__hero" style={{ marginTop: 18 }}>
 
-              <Avatar c={{ name: f.name, category: f.category }} size={64} />
+              {SUPABASE_CONFIGURED ? (
+                <label style={{ cursor: "pointer", position: "relative", display: "inline-block", flexShrink: 0 }}>
+                  {f.avatarPath
+                    ? <img src={getPublicUrl({ bucket: "avatars", path: f.avatarPath })} alt="" style={{ width: 64, height: 64, borderRadius: "50%", objectFit: "cover" }} />
+                    : <Avatar c={{ name: f.name, category: f.category }} size={64} />}
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={async (e) => {
+                    const file = e.target.files?.[0]; if (!file) return;
+                    try { const { path } = await uploadFile({ bucket: "avatars", file }); setF((p) => ({ ...p, avatarPath: path })); flash?.("Зураг хадгалагдлаа ✓"); } catch { flash?.("Зураг ачаалж чадсангүй"); }
+                  }} />
+                  <span style={{ position: "absolute", right: -2, bottom: -2, width: 22, height: 22, borderRadius: "50%", background: "#FF6B35", color: "#fff", fontSize: 12, display: "grid", placeItems: "center", border: "2px solid #141310" }}>✎</span>
+                </label>
+              ) : (
+                <Avatar c={{ name: f.name, category: f.category }} size={64} />
+              )}
 
               <div>
 
@@ -12922,6 +12939,7 @@ export default function App() {
         skills: [...(row.skills || []), ...(row.custom_skills || [])],
         experience: row.experience || [],
         education: row.education || [],
+        photo: row.avatar_path ? getPublicUrl({ bucket: "avatars", path: row.avatar_path }) : undefined,
         live: true,
       }));
       if (mapped.length) setLivePool(mapped);
