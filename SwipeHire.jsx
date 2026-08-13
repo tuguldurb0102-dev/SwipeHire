@@ -3281,6 +3281,7 @@ function CandidateCard({ c, active, saved, onToggleSave, onContact, onDownload, 
                 {[
                   { icon: <FileDown size={16} />, label: lang === "en" ? "Download CV" : lang === "ko" ? "CV 다운로드" : "CV татах", action: () => { onDownload(c); setShowMore(false); }, color: "#4FA3FF" },
                   { icon: <FileText size={16} />, label: lang === "en" ? "Full Profile" : lang === "ko" ? "전체 프로필" : "Профайл", action: () => { onOpen(c); setShowMore(false); }, color: "#3DDC97" },
+                  ...(SUPABASE_CONFIGURED && typeof c.id === "string" ? [{ icon: <span style={{ fontSize: 15 }}>▶</span>, label: lang === "en" ? "Video CV" : "Видео CV", action: async () => { setShowMore(false); const url = await getCandidateDocumentUrl({ candidateId: c.id, kind: "video" }); if (url) window.open(url, "_blank"); }, color: "#B488FF" }] : []),
                   { icon: <span style={{ fontSize: 14 }}>⚑</span>, label: lang === "en" ? "Report" : lang === "ko" ? "신고" : "Мэдэгдэх", action: () => setShowMore(false), color: "#FF6B35" },
                 ].map((item, i) => (
                   <button key={i} onClick={item.action} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "12px 8px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)", cursor: "pointer", color: item.color }}>
