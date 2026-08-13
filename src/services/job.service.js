@@ -18,6 +18,23 @@ export async function listActiveJobs({ category, limit = 50 } = {}) {
   }
 }
 
+/** The caller's own jobs (any status). RLS restricts to the employer's rows. */
+export async function listMyJobs() {
+  try {
+    const supabase = requireClient();
+    const { data: u } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from("jobs")
+      .select("*")
+      .eq("employer_id", u.user.id)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
 export async function createJob(job) {
   try {
     const supabase = requireClient();

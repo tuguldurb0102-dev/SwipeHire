@@ -21,6 +21,7 @@ import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 import ChatPanel from "./src/components/chat/ChatPanel.jsx";
 import ApplicantsPanel from "./src/components/employer/ApplicantsPanel.jsx";
 import NotificationBell from "./src/components/notifications/NotificationBell.jsx";
+import MyJobsPanel from "./src/components/employer/MyJobsPanel.jsx";
 
 import {
 
@@ -7528,7 +7529,7 @@ function JobFeed() {
 
           role="seeker"
 
-          onSubscribe={(plan) => { setSubscribed(true); setShowPaywall(false); }}
+          onSubscribe={(plan) => { if (!SUPABASE_CONFIGURED) setSubscribed(true); /* legacy demo-only; prod entitlements are server-side */ setShowPaywall(false); }}
 
           onClose={() => setShowPaywall(false)}
 
@@ -10361,7 +10362,7 @@ function SeekerFinancePanel() {
 
       {showPaywall && (
 
-        <PaywallSheet role="seeker" onSubscribe={() => { setSubscribed(true); setShowPaywall(false); }} onClose={() => setShowPaywall(false)} />
+        <PaywallSheet role="seeker" onSubscribe={() => { if (!SUPABASE_CONFIGURED) setSubscribed(true); /* legacy demo-only */ setShowPaywall(false); }} onClose={() => setShowPaywall(false)} />
 
       )}
 
@@ -12829,6 +12830,7 @@ export default function App() {
   const [showPostJob, setShowPostJob] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showApplicants, setShowApplicants] = useState(false);
+  const [showMyJobs, setShowMyJobs] = useState(false);
 
   useEffect(() => {
     if (!AUTH_ENABLED) return;
@@ -13888,6 +13890,15 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
         <PostJobSheet lang={lang} companyId={companyId}
           onClose={() => setShowPostJob(false)}
           onPosted={() => {}} />
+      )}
+
+      {/* Phase 1 STEP 5: my jobs (employer) */}
+      {AUTH_ENABLED && role === "employer" && (
+        <button onClick={() => setShowMyJobs(true)} aria-label="My jobs"
+          style={{ position: "fixed", right: 18, bottom: 280, zIndex: 60, width: 56, height: 56, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 22, cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>📄</button>
+      )}
+      {showMyJobs && AUTH_ENABLED && (
+        <MyJobsPanel lang={lang} onClose={() => setShowMyJobs(false)} />
       )}
 
       {/* Phase 3d: applicants (employer) */}
