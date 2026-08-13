@@ -15,7 +15,7 @@ import { getOrCreateCompany } from "./src/services/company.service.js";
 import { listActiveJobs, createJob } from "./src/services/job.service.js";
 import { applyToJob, saveCandidate, listSavedCandidates, unsaveCandidate } from "./src/services/application.service.js";
 import { createConversation } from "./src/services/message.service.js";
-import { uploadFile, getPublicUrl } from "./src/services/storage.service.js";
+import { uploadFile, getPublicUrl, getCandidateDocumentUrl } from "./src/services/storage.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 import ChatPanel from "./src/components/chat/ChatPanel.jsx";
@@ -13144,8 +13144,15 @@ export default function App() {
 
 
 
-  const onDownload = (c) => {
-    // 1) Real uploaded PDF → download the actual file
+  const onDownload = async (c) => {
+    // 0) Real candidate → server-checked signed URL for their uploaded CV.
+    //    Employer never has the storage path; the edge fn verifies the
+    //    relationship. Falls through to a printable CV if none is uploaded.
+    if (AUTH_ENABLED && typeof c.id === "string" && !c.cvFileData) {
+      const url = await getCandidateDocumentUrl({ candidateId: c.id, kind: "cv" });
+      if (url) { window.open(url, "_blank"); flash(lang === "en" ? "Opening CV…" : "CV нээж байна…"); return; }
+    }
+    // 1) Real uploaded PDF (local session) → download the actual file
     if (c.cvFileData) {
       const a = document.createElement("a");
       a.href = c.cvFileData;

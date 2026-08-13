@@ -81,6 +81,25 @@ export async function uploadFile({ bucket, file }) {
   }
 }
 
+/**
+ * Signed URL for a candidate's private CV / Video CV, via the
+ * get-candidate-document Edge Function. The employer passes only a candidate id
+ * + kind; the server checks the relationship and resolves the path. Returns the
+ * URL string, or null if unavailable/forbidden.
+ */
+export async function getCandidateDocumentUrl({ candidateId, kind }) {
+  try {
+    const supabase = requireClient();
+    const { data, error } = await supabase.functions.invoke("get-candidate-document", {
+      body: { candidate_id: candidateId, kind },
+    });
+    if (error) return null;
+    return data?.url || null;
+  } catch {
+    return null;
+  }
+}
+
 /** Public URL — only for public buckets (avatars, company-logos). */
 export function getPublicUrl({ bucket, path }) {
   const supabase = requireClient();
