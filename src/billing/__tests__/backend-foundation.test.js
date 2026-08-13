@@ -18,6 +18,7 @@ const SQL = readFileSync(resolve(here, "../../../supabase/migrations/005_billing
 const SQL6 = readFileSync(resolve(here, "../../../supabase/migrations/006_billing_grants_fix.sql"), "utf8");
 const SQL7 = readFileSync(resolve(here, "../../../supabase/migrations/007_fix_order_function_ambiguity.sql"), "utf8");
 const SQL8 = readFileSync(resolve(here, "../../../supabase/migrations/008_fix_consume_ambiguity.sql"), "utf8");
+const SQL9 = readFileSync(resolve(here, "../../../supabase/migrations/009_phase1_core.sql"), "utf8");
 
 const BILLING_TABLES = [
   "billing_products", "billing_prices", "employer_subscriptions", "subscription_usage",
@@ -129,6 +130,30 @@ describe("007/008 ambiguity fixes (regression guards)", () => {
   it("both fixes re-assert least-privilege grants", () => {
     expect(SQL7).toMatch(/grant execute on function public\.create_payment_order_request\([^)]*\) to authenticated/i);
     expect(SQL8).toMatch(/grant execute on function public\.consume_service_entitlement\(uuid\) to authenticated/i);
+  });
+});
+
+describe("009 phase-1 core schema", () => {
+  it("adds the four missing tables with RLS", () => {
+    for (const t of ["notifications", "company_members", "offers", "usage_events"]) {
+      expect(SQL9).toMatch(new RegExp(`create table if not exists public\\.${t}`));
+      expect(SQL9).toMatch(new RegExp(`alter table public\\.${t}\\s+enable row level security`));
+    }
+  });
+  it("notifications are created server-side (no client INSERT policy; DEFINER helper revoked from clients)", () => {
+    expect(SQL9).not.toMatch(/create policy notif[^;]*for insert/i);
+    expect(SQL9).toMatch(/revoke all on function public\.create_notification\([^)]*\) from public, anon, authenticated/i);
+  });
+  it("triggers notify employer on application and members on message", () => {
+    expect(SQL9).toMatch(/on_application_created[\s\S]*after insert on public\.applications/i);
+    expect(SQL9).toMatch(/on_message_created[\s\S]*after insert on public\.messages/i);
+  });
+  it("company_members backfills owners and only the owner manages membership", () => {
+    expect(SQL9).toMatch(/insert into public\.company_members[\s\S]*from public\.companies/i);
+    expect(SQL9).toMatch(/cm_members_write[\s\S]*owns_company\(company_id\)/i);
+  });
+  it("offers: candidate may only accept/decline their own", () => {
+    expect(SQL9).toMatch(/offers_candidate_respond[\s\S]*status in \('accepted','declined'\)/i);
   });
 });
 
