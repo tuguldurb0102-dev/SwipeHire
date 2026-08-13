@@ -49,7 +49,7 @@ export default function EmployerPlanSheet({
 
   const S = {
     overlay: { position: "fixed", inset: 0, zIndex: 240, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(10px)", display: "flex", flexDirection: "column" },
-    sheet: { background: "#141310", flex: 1, overflowY: "auto", padding: "0 18px 40px" },
+    sheet: { background: "var(--bg-2)", flex: 1, overflowY: "auto", padding: "0 18px 40px" },
     badge: { display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 800, letterSpacing: 0.4, color: "#FFD23F", background: "rgba(255,210,63,0.12)", border: "1px solid rgba(255,210,63,0.35)", borderRadius: 999, padding: "4px 10px" },
     label: { fontSize: 12, color: "#9a968d", fontWeight: 700, letterSpacing: 0.4, margin: "22px 0 8px" },
   };

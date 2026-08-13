@@ -116,7 +116,7 @@ export default function PaymentFlow({
       position: "fixed", inset: 0, zIndex: 260, background: "rgba(0,0,0,0.82)",
       backdropFilter: "blur(10px)", display: "flex", flexDirection: "column",
     },
-    sheet: { background: "#141310", flex: 1, overflowY: "auto", padding: "0 18px 40px" },
+    sheet: { background: "var(--bg-2)", flex: 1, overflowY: "auto", padding: "0 18px 40px" },
     badge: {
       display: "inline-flex", alignItems: "center", gap: 6, fontSize: 10.5, fontWeight: 800,
       letterSpacing: 0.4, color: "#FFD23F", background: "rgba(255,210,63,0.12)",

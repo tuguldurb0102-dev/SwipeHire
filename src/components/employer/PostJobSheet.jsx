@@ -35,7 +35,7 @@ export default function PostJobSheet({ lang = "mn", companyId, onClose, onPosted
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 250, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(10px)", display: "flex", flexDirection: "column" }} role="dialog" aria-modal="true">
-      <div style={{ background: "#141310", flex: 1, overflowY: "auto", padding: "0 18px 40px" }}>
+      <div style={{ background: "var(--bg-2)", flex: 1, overflowY: "auto", padding: "0 18px 40px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "20px 0 8px" }}>
           <div style={{ fontSize: 20, fontWeight: 900, color: "var(--ink,#f6f4ef)", fontFamily: "'Barlow Condensed',sans-serif" }}>{L("Ажлын зар нэмэх", "Post a job")}</div>
           <button onClick={onClose} aria-label="Close" style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 10, width: 36, height: 36, color: "#9a968d", cursor: "pointer", fontSize: 18 }}>✕</button>

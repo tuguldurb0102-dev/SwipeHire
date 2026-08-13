@@ -45,7 +45,7 @@ export default function ApplicantsPanel({ lang = "mn", onMessage, onClose }) {
   })[s] || s;
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 250, background: "#0f0e0c", display: "flex", flexDirection: "column" }} role="dialog" aria-modal="true">
+    <div style={{ position: "fixed", inset: 0, zIndex: 250, background: "var(--bg)", display: "flex", flexDirection: "column" }} role="dialog" aria-modal="true">
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ fontSize: 18, fontWeight: 900, color: "var(--ink,#f6f4ef)", fontFamily: "'Barlow Condensed',sans-serif" }}>{L("Өргөдөл гаргагчид", "Applicants")}</div>
         <button onClick={onClose} aria-label="Close" style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 10, width: 36, height: 36, color: "#9a968d", cursor: "pointer", fontSize: 18 }}>✕</button>

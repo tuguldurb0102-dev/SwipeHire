@@ -53,7 +53,7 @@ export default function ChatPanel({ lang = "mn", myId, onClose }) {
   const fmtDate = (ts) => (ts ? new Date(ts).toLocaleDateString() : "");
 
   const S = {
-    overlay: { position: "fixed", inset: 0, zIndex: 255, background: "#0f0e0c", display: "flex", flexDirection: "column" },
+    overlay: { position: "fixed", inset: 0, zIndex: 255, background: "var(--bg)", display: "flex", flexDirection: "column" },
     head: { display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid rgba(255,255,255,0.08)" },
     back: { background: "rgba(255,255,255,0.08)", border: "none", borderRadius: 10, width: 36, height: 36, color: "#9a968d", cursor: "pointer", fontSize: 18 },
   };

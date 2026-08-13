@@ -2180,13 +2180,13 @@ function VideoIntro({ c, playing }) {
 
           <stop offset="55%" stopColor={accent} stopOpacity="0.14" />
 
-          <stop offset="100%" stopColor="#0c0c0a" stopOpacity="1" />
+          <stop offset="100%" stopColor="var(--bg)" stopOpacity="1" />
 
         </radialGradient>
 
         <linearGradient id={`${id}b`} x1="0" y1="0" x2="1" y2="1">
 
-          <stop offset="0%" stopColor="#15140f" />
+          <stop offset="0%" stopColor="var(--bg-2)" />
 
           <stop offset="100%" stopColor="#000000" />
 
@@ -3197,7 +3197,7 @@ function CandidateCard({ c, active, saved, onToggleSave, onContact, onDownload, 
           onClick={e => { e.stopPropagation(); setShowMore(false); }}
           style={{ position: "fixed", inset: 0, zIndex: 310, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(12px)", display: "flex", alignItems: "flex-end" }}
         >
-          <div onClick={e => e.stopPropagation()} style={{ width: "100%", background: "#161514", borderRadius: "24px 24px 0 0", paddingBottom: "env(safe-area-inset-bottom, 28px)", overflow: "hidden", animation: "rise 0.28s cubic-bezier(0.32,0.72,0,1)" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width: "100%", background: "var(--bg-2)", borderRadius: "24px 24px 0 0", paddingBottom: "env(safe-area-inset-bottom, 28px)", overflow: "hidden", animation: "rise 0.28s cubic-bezier(0.32,0.72,0,1)" }}>
 
             {/* Drag handle */}
             <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 0" }}>
@@ -3386,7 +3386,7 @@ function ReportSheet({ subjectName, lang, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 300, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
          onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ width: "100%", maxWidth: 440, background: "#1a1914", borderRadius: "22px 22px 0 0",
+      <div style={{ width: "100%", maxWidth: 440, background: "var(--bg-2)", borderRadius: "22px 22px 0 0",
         padding: "22px 20px max(30px, calc(20px + env(safe-area-inset-bottom,0px)))", border: "1px solid rgba(255,255,255,0.08)", maxHeight: "88dvh", overflowY: "auto" }}>
 
         {sent ? (
@@ -3715,7 +3715,7 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
             return (
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ width:52, height:52, borderRadius:"50%", background:"#1a1914", border:`3px solid ${r.matchScore >= 70 ? "#3DDC97" : r.matchScore >= 50 ? "#FFD23F" : "#FF5050"}`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:16, color: r.matchScore >= 70 ? "#3DDC97" : r.matchScore >= 50 ? "#FFD23F" : "#FF5050", flexShrink:0 }}>
+                  <div style={{ width:52, height:52, borderRadius:"50%", background:"var(--bg-2)", border:`3px solid ${r.matchScore >= 70 ? "#3DDC97" : r.matchScore >= 50 ? "#FFD23F" : "#FF5050"}`, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:800, fontSize:16, color: r.matchScore >= 70 ? "#3DDC97" : r.matchScore >= 50 ? "#FFD23F" : "#FF5050", flexShrink:0 }}>
                     {r.matchScore}
                   </div>
                   <p style={{ margin:0, fontSize:13, color:"#ccc", lineHeight:1.5 }}>{r.summary}</p>
@@ -3778,7 +3778,7 @@ function ProfileDetail({ c, saved, stage, note, onBack, onToggleSave, onContact,
 
                 onClick={() => onSetStage(c.id, s.key)}
 
-                style={stage === s.key ? { background: s.hex, borderColor: s.hex, color: "#11110f" } : undefined}
+                style={stage === s.key ? { background: s.hex, borderColor: s.hex, color: "var(--bg-2)" } : undefined}
 
               >
 
@@ -4146,7 +4146,7 @@ function PhoneVerifySheet({ phone, onClose, onVerified }) {
 
                   style={{ width: 52, height: 60, textAlign: "center", fontSize: 26, fontWeight: 700,
 
-                    background: "#1b1a15", border: `2px solid ${d ? "#FF6B35" : "rgba(255,255,255,0.15)"}`,
+                    background: "var(--bg-2)", border: `2px solid ${d ? "#FF6B35" : "rgba(255,255,255,0.15)"}`,
 
                     borderRadius: 12, color: "var(--ink)", outline: "none", transition: "border-color .15s" }} />
 
@@ -4900,7 +4900,7 @@ function ContactSheet({ c, onClose, onContacted, onVideoInvite }) {
 
         <button className="sheet__action"
 
-          style={{ background: "linear-gradient(135deg,#3DDC97,#2bc880)", color: "#0d0c0a", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginBottom: 8 }}
+          style={{ background: "linear-gradient(135deg,#3DDC97,#2bc880)", color: "var(--bg)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%", marginBottom: 8 }}
 
           onClick={() => { onClose(); onVideoInvite(c); }}>
 
@@ -5120,14 +5120,14 @@ function StageCandidateList({ stageKey, stageLabel, candidates, stages, onOpen, 
             const accent = TRADE[c.category]?.hex || "#FF6B35";
             return (
               <div key={c.id} onClick={() => onOpen(c)} style={{
-                background: "#18181A", borderRadius: 16,
+                background: "var(--bg-2)", borderRadius: 16,
                 padding: "14px 16px", display: "flex", alignItems: "center", gap: 14,
                 cursor: "pointer", transition: "background 150ms",
               }}
                 onMouseEnter={e => e.currentTarget.style.background = "#222225"}
-                onMouseLeave={e => e.currentTarget.style.background = "#18181A"}
+                onMouseLeave={e => e.currentTarget.style.background = "var(--bg-2)"}
                 onTouchStart={e => e.currentTarget.style.background = "#222225"}
-                onTouchEnd={e => e.currentTarget.style.background = "#18181A"}
+                onTouchEnd={e => e.currentTarget.style.background = "var(--bg-2)"}
               >
                 <Avatar c={c} size={46} />
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -5266,7 +5266,7 @@ function Dashboard({ stages, onOpen, onBrowse, candidates = CANDIDATES, activeSt
             <div
               key={col.key}
               style={{
-                background: "#18181A",
+                background: "var(--bg-2)",
                 borderRadius: 18,
                 padding: "16px 18px",
                 display: "flex", alignItems: "center", gap: 14,
@@ -5277,9 +5277,9 @@ function Dashboard({ stages, onOpen, onBrowse, candidates = CANDIDATES, activeSt
               }}
               onClick={() => onStageOpen && onStageOpen(col.key)}
               onMouseEnter={e => e.currentTarget.style.background = "#222225"}
-              onMouseLeave={e => e.currentTarget.style.background = "#18181A"}
+              onMouseLeave={e => e.currentTarget.style.background = "var(--bg-2)"}
               onTouchStart={e => e.currentTarget.style.background = "#222225"}
-              onTouchEnd={e => e.currentTarget.style.background = "#18181A"}
+              onTouchEnd={e => e.currentTarget.style.background = "var(--bg-2)"}
             >
               {/* Icon box */}
               <div style={{
@@ -6224,7 +6224,7 @@ function SkillCustomInput({ onAdd, selectedSkills, onToggle }) {
 
           style={{
 
-            flex: 1, background: "#1b1a15", border: "1.5px dashed rgba(255,255,255,0.2)",
+            flex: 1, background: "var(--bg-2)", border: "1.5px dashed rgba(255,255,255,0.2)",
 
             borderRadius: 12, color: "var(--ink)", fontFamily: "inherit",
 
@@ -6436,7 +6436,7 @@ function DrumCategoryPicker({ value, onChange }) {
 
             placeholder="Жишээ: Кран операторч, Уурхайн техникч…"
 
-            style={{ width: "100%", boxSizing: "border-box", background: "#1b1a15",
+            style={{ width: "100%", boxSizing: "border-box", background: "var(--bg-2)",
 
               border: "1.5px solid #FF6B35", borderRadius: 12, color: "var(--ink)",
 
@@ -6882,7 +6882,7 @@ function PaywallSheet({ role, onSubscribe, onClose }) {
               const active = selPlan === p.id;
               return (
                 <div key={p.id} onClick={() => setSelPlan(p.id)} style={{
-                  background: active ? "rgba(255,106,0,0.1)" : "#1A1A1C",
+                  background: active ? "rgba(255,106,0,0.1)" : "var(--bg-2)",
                   border: `2px solid ${active ? "#FF6A00" : "rgba(255,255,255,0.08)"}`,
                   borderRadius: 18, padding: "18px 20px", cursor: "pointer",
                   transition: "all 220ms ease",
@@ -6925,7 +6925,7 @@ function PaywallSheet({ role, onSubscribe, onClose }) {
                 {benefits.map((b, i) => (
                   <div key={i} style={{
                     display: "flex", alignItems: "center", gap: 14,
-                    background: "#1A1A1C", border: "1px solid rgba(255,255,255,0.08)",
+                    background: "var(--bg-2)", border: "1px solid rgba(255,255,255,0.08)",
                     borderRadius: 14, padding: "14px 16px",
                   }}>
                     <span style={{ fontSize: 22, lineHeight: 1, width: 30, textAlign: "center" }}>{b.icon}</span>
@@ -7373,7 +7373,7 @@ function JobFeed() {
 
                 width: "100%", maxHeight: "70vh",
 
-                background: "#1a1917", borderRadius: "22px 22px 0 0",
+                background: "var(--bg-2)", borderRadius: "22px 22px 0 0",
 
                 padding: "0 0 32px",
 
@@ -7547,7 +7547,7 @@ function JobCard({ job, mini }) {
 
   return (
 
-    <div style={{ background: "#1a190f", minHeight: mini ? 240 : 480 }}>
+    <div style={{ background: "var(--bg-2)", minHeight: mini ? 240 : 480 }}>
 
       {/* Poster image */}
 
@@ -8341,7 +8341,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
             {/* Delete account confirmation */}
             {showDeleteAccount && (
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", zIndex: 220, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-                <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 340, border: "1px solid rgba(255,80,80,0.25)" }}>
+                <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 340, border: "1px solid rgba(255,80,80,0.25)" }}>
                   <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10, color: "#FF5050" }}>
                     {lang === "en" ? "Delete account?" : lang === "ko" ? "계정을 삭제할까요?" : "Бүртгэлээ устгах уу?"}
                   </div>
@@ -8373,7 +8373,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
             {/* Logout confirmation overlay */}
             {showLogoutConfirm && (
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-                <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
+                <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
                   <div style={{ fontWeight: 800, fontSize: 17, marginBottom: 10 }}>
                     {lang === "en" ? "Logout" : lang === "ko" ? "로그아웃" : "Гарах"}
                   </div>
@@ -8401,7 +8401,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
         {/* ── Leave registration confirm ── */}
         {showLeaveConfirm && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-            <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
+            <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
               <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>
                 {lang === "en" ? "Leave registration?" : lang === "ko" ? "등록을 취소하시겠습니까?" : "Бүртгэлийг орхих уу?"}
               </div>
@@ -8423,7 +8423,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
         {/* ── Reset demo data confirm ── */}
         {showResetConfirm && (
           <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-            <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
+            <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
               <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>
                 {lang === "en" ? "Reset all demo data?" : lang === "ko" ? "데모 데이터 초기화?" : "Демо өгөгдлийг устгах уу?"}
               </div>
@@ -9600,7 +9600,7 @@ function AICareerCoach() {
 
           width: 44, height: 44, borderRadius: 14, flexShrink: 0,
 
-          objectFit: "cover", background: "#12151c",
+          objectFit: "cover", background: "var(--bg-2)",
 
         }} />
 
@@ -10839,7 +10839,7 @@ function ProfessionDropdown({ filter, setFilter, lang }) {
 
             position: "absolute", bottom: 0, left: 0, right: 0,
 
-            background: "#1a1914", borderRadius: "20px 20px 0 0",
+            background: "var(--bg-2)", borderRadius: "20px 20px 0 0",
 
             borderTop: "1px solid rgba(255,255,255,0.1)",
 
@@ -12560,7 +12560,7 @@ function EmployerTrustUpgradeSheet({ lang, onClose, onVerifyNow }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 3000, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(12px)" }} />
-      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, zIndex: 3001, background: "#161514", borderRadius: "24px 24px 0 0", padding: "0 0 40px", animation: "rise 0.28s" }}>
+      <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: 480, zIndex: 3001, background: "var(--bg-2)", borderRadius: "24px 24px 0 0", padding: "0 0 40px", animation: "rise 0.28s" }}>
         <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,255,255,0.2)", margin: "12px auto 0" }} />
         <div style={{ padding: "20px 20px 0" }}>
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 }}>
@@ -12665,7 +12665,7 @@ function SplashScreen({ onDone }) {
 
       <div style={{
         position: "fixed", inset: 0,
-        background: "#0D0D0D",
+        background: "var(--bg)",
         display: "flex", flexDirection: "column",
         alignItems: "center", justifyContent: "center",
         zIndex: 9999,
@@ -14047,7 +14047,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
       {showEmpLogout && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 14 }}>
               {lang === "en" ? "Profile" : lang === "ko" ? "프로필" : "Профайл"}
             </div>
@@ -14109,7 +14109,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
       {showEmpResetConfirm && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 200, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <div style={{ background: "#1c1b16", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ background: "var(--bg-2)", borderRadius: 20, padding: 24, width: "100%", maxWidth: 320, border: "1px solid rgba(255,255,255,0.1)" }}>
             <div style={{ fontWeight: 800, fontSize: 16, marginBottom: 8 }}>
               {lang === "en" ? "Reset all demo data?" : lang === "ko" ? "데모 데이터 초기화?" : "Демо өгөгдлийг устгах уу?"}
             </div>
@@ -14163,9 +14163,11 @@ function Style() {
       /* ── Light theme overrides (higher specificity → win regardless of order) ── */
       [data-theme="light"] body{ background:#ece9e3; }
       [data-theme="light"] .app{
-        --bg:#ffffff; --bg-2:#f5f3ef; --ink:#1a1712; --ink-2:#3d3830; --dim:#6b665d;
-        --surface:rgba(0,0,0,.045); --surface-2:rgba(0,0,0,.07);
-        --surface-hi:linear-gradient(160deg,rgba(0,0,0,.05),rgba(0,0,0,.02));
+        /* warm light-gray base (not pure white) so existing inline
+           rgba(255,255,255,…) surfaces & borders still read as raised areas */
+        --bg:#e8e5df; --bg-2:#f4f2ec; --ink:#1a1712; --ink-2:#3d3830; --dim:#6f6a61;
+        --surface:rgba(255,255,255,.65); --surface-2:rgba(255,255,255,.9);
+        --surface-hi:linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,255,255,.6));
         --hair:rgba(0,0,0,.10); --hair-2:rgba(0,0,0,.16);
         --sh-1:0 2px 8px rgba(0,0,0,.10);
         --sh-2:0 8px 24px rgba(0,0,0,.12), inset 0 1px 0 rgba(255,255,255,.6);
