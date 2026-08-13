@@ -13,7 +13,7 @@ import { getSession, onAuthStateChange, signOut as authSignOut } from "./src/ser
 import { getCurrentProfile, updateCandidateProfile, getCandidateProfile, updateEmployerProfile, getEmployerProfile, listPublishedCandidates } from "./src/services/profile.service.js";
 import { getOrCreateCompany } from "./src/services/company.service.js";
 import { listActiveJobs, createJob } from "./src/services/job.service.js";
-import { applyToJob, saveCandidate } from "./src/services/application.service.js";
+import { applyToJob, saveCandidate, listSavedCandidates, unsaveCandidate } from "./src/services/application.service.js";
 import { createConversation } from "./src/services/message.service.js";
 import { uploadFile, getPublicUrl } from "./src/services/storage.service.js";
 import AuthGate from "./src/components/auth/AuthGate.jsx";
@@ -12994,6 +12994,15 @@ export default function App() {
     }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, empVerifData?.name]);
+
+  // STEP 6: load persisted shortlist from saved_candidates on employer sign-in.
+  useEffect(() => {
+    if (!AUTH_ENABLED || role !== "employer") return;
+    listSavedCandidates().then((ids) => {
+      if (ids?.length) setSaved((prev) => new Set([...prev, ...ids]));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
   useEffect(() => { LS.set("swipehire_saved", [...saved]); }, [saved]);
   useEffect(() => { LS.set("swipehire_stages", stages); }, [stages]);
   useEffect(() => { LS.set("swipehire_notes", notes); }, [notes]);
@@ -13093,9 +13102,9 @@ export default function App() {
 
       const next = new Set(prev);
 
-      if (next.has(id)) next.delete(id);
+      if (next.has(id)) { next.delete(id); if (AUTH_ENABLED && typeof id === "string") unsaveCandidate(id).catch(() => {}); }
 
-      else next.add(id);
+      else { next.add(id); if (AUTH_ENABLED && typeof id === "string") saveCandidate(id).catch(() => {}); }
 
       return next;
 

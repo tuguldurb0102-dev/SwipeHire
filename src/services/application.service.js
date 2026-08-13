@@ -104,6 +104,39 @@ export async function setApplicationStatus(applicationId, status) {
   }
 }
 
+/** Candidate ids the caller (employer) has saved. */
+export async function listSavedCandidates() {
+  try {
+    const supabase = requireClient();
+    const { data: u } = await supabase.auth.getUser();
+    const { data, error } = await supabase
+      .from("saved_candidates")
+      .select("candidate_id")
+      .eq("employer_id", u.user.id);
+    if (error) throw error;
+    return (data || []).map((r) => r.candidate_id);
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
+/** Remove a saved candidate. */
+export async function unsaveCandidate(candidateId) {
+  try {
+    const supabase = requireClient();
+    const { data: u } = await supabase.auth.getUser();
+    const { error } = await supabase
+      .from("saved_candidates")
+      .delete()
+      .eq("employer_id", u.user.id)
+      .eq("candidate_id", candidateId);
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    throw toServiceError(err);
+  }
+}
+
 export async function saveCandidate(candidateId) {
   try {
     const supabase = requireClient();
