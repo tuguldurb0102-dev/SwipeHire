@@ -12984,7 +12984,12 @@ export default function App() {
       website: empVerifData?.website,
       industry: empVerifData?.industry,
       headcount: empVerifData?.headcount,
-    }).then((c) => { if (c?.id) setCompanyId(c.id); }).catch(() => {});
+    }).then((c) => {
+      if (c?.id) setCompanyId(c.id);
+      // Verification is SERVER-controlled: trust companies.verified (admin-set),
+      // never the client wizard flag, in production.
+      setEmpVerified(!!c?.verified);
+    }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [role, empVerifData?.name]);
   useEffect(() => { LS.set("swipehire_saved", [...saved]); }, [saved]);
@@ -13470,7 +13475,7 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
 
           onSubmitted={(data) => { setEmpVerifData(data); setEmpSubmitted(true); }}
 
-          onVerified={(data) => { setEmpVerifData(data); setEmpSubmitted(true); setEmpVerified(true); }}
+          onVerified={(data) => { setEmpVerifData(data); setEmpSubmitted(true); if (!AUTH_ENABLED) setEmpVerified(true); /* prod: server-controlled via companies.verified */ }}
 
         />
 
