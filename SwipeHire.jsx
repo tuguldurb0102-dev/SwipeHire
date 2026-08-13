@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, createContext, useContext } from "react";
 import { computeMatchScore } from "./src/lib/matching.js";
 import { checkUpload } from "./src/lib/uploads.js";
+import { computePassportScore } from "./src/lib/passport.js";
 import PaymentFlow from "./src/components/billing/PaymentFlow.jsx";
 import EmployerPlanSheet from "./src/components/billing/EmployerPlanSheet.jsx";
 import SeekerPaymentsPanel from "./src/components/billing/SeekerPaymentsPanel.jsx";
@@ -2494,39 +2495,7 @@ function TrustMeter({ v }) {
 
 
 
-/* ── Passport Score ──────────────────────────────── */
-
-// Pure helper — safe with missing/undefined fields.
-// Max 100 pts across 6 dimensions:
-//   Verified (30) · Skills (20) · Certs (15) · Experience (15) · About (10) · Tenure (10)
-function computePassportScore(c) {
-  if (!c) return { total: 0, grade: "—", breakdown: [] };
-
-  const verif = c.verified || {};
-  const pts = {
-    verified:   (verif.phone ? 10 : 0) + (verif.id ? 10 : 0) + (verif.skill ? 10 : 0),
-    skills:     Math.min((c.skills?.length || 0) + (c.customSkills?.length || 0), 5) * 4,
-    certs:      Math.min((c.certs?.length || 0), 3) * 5,
-    experience: Math.min((c.experience?.length || 0), 3) * 5,
-    about:      (c.about?.trim?.().length || 0) > 50 ? 10 : (c.about?.trim?.().length || 0) > 10 ? 5 : 0,
-    tenure:     Math.min(c.years || 0, 10),
-  };
-
-  const total = Object.values(pts).reduce((a, b) => a + b, 0);
-  const grade = total >= 90 ? "A+" : total >= 80 ? "A" : total >= 70 ? "B+" : total >= 60 ? "B" : "C";
-  const color = total >= 80 ? "#3DDC97" : total >= 65 ? "#4FA3FF" : total >= 50 ? "#FFD23F" : "#FF6B35";
-
-  const breakdown = [
-    { label: "Баталгаажуулалт", labelEn: "Verification", val: pts.verified, max: 30 },
-    { label: "Ур чадвар",       labelEn: "Skills",        val: pts.skills,   max: 20 },
-    { label: "Гэрчилгээ",       labelEn: "Certs",         val: pts.certs,    max: 15 },
-    { label: "Туршлага",        labelEn: "Experience",    val: pts.experience, max: 15 },
-    { label: "Танилцуулга",     labelEn: "About",         val: pts.about,    max: 10 },
-    { label: "Ажлын жил",       labelEn: "Tenure",        val: pts.tenure,   max: 10 },
-  ];
-
-  return { total, grade, color, breakdown };
-}
+/* ── Passport Score — moved to src/lib/passport.js (imported at top) ── */
 
 // Pure display component — no state, no hooks, no side effects.
 function PassportScoreWidget({ c, lang }) {
