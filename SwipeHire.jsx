@@ -24,6 +24,7 @@ import ApplicantsPanel from "./src/components/employer/ApplicantsPanel.jsx";
 import NotificationBell from "./src/components/notifications/NotificationBell.jsx";
 import MyJobsPanel from "./src/components/employer/MyJobsPanel.jsx";
 import VerificationRequestSheet from "./src/components/verification/VerificationRequestSheet.jsx";
+import { getMyVerifications } from "./src/services/verification.service.js";
 
 import {
 
@@ -7780,6 +7781,21 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
   const [published, setPublished] = useState(() => !!_seekerMeta.published);
   const [verified, setVerified] = useState(() => _seekerMeta.verified || { phone: false, id: false, skill: false });
 
+  // Server-derived verification status (identity/phone). In configured mode this
+  // is the SOURCE OF TRUTH — the candidate cannot self-verify; only an approved
+  // verification_request (admin/server) flips `verified`.
+  const [verifyStatus, setVerifyStatus] = useState({ id: "not_requested", phone: "not_requested" });
+  useEffect(() => {
+    if (!SUPABASE_CONFIGURED) return;
+    getMyVerifications().then((rows) => {
+      const latest = (kind) => rows.filter((r) => r.kind === kind).sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+      const idReq = latest("identity"); const phReq = latest("phone");
+      setVerifyStatus({ id: idReq?.status || "not_requested", phone: phReq?.status || "not_requested" });
+      setVerified((v) => ({ ...v, id: idReq?.status === "approved", phone: phReq?.status === "approved" }));
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [step, setStep] = useState(1);
 
   const [f, setF] = useState(() => _lsGet("swipehire_seeker", blankForm));
@@ -8197,7 +8213,7 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
                       <div style={{ fontSize: 13.5, fontWeight: 600, color: done ? t.color : "var(--ink)" }}>{t.label}</div>
 
-                      <div style={{ fontSize: 11.5, color: "var(--dim)", marginTop: 1 }}>{done ? "✓ Баталгаажсан" : t.sub}</div>
+                      <div style={{ fontSize: 11.5, color: (SUPABASE_CONFIGURED && verifyStatus[t.key] === "pending") ? "#FFD23F" : (SUPABASE_CONFIGURED && verifyStatus[t.key] === "rejected") ? "#ff8a8a" : "var(--dim)", marginTop: 1 }}>{done ? "✓ Баталгаажсан" : (SUPABASE_CONFIGURED && verifyStatus[t.key] === "pending") ? "⏳ Хүлээгдэж байна" : (SUPABASE_CONFIGURED && verifyStatus[t.key] === "rejected") ? "✕ Татгалзсан — дахин илгээх" : t.sub}</div>
 
                     </div>
 
@@ -8421,16 +8437,20 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
           <PhoneVerifySheet phone={f.phone} onClose={() => setVerifySheet(null)}
 
-            onVerified={() => setVerified((v) => ({ ...v, phone: true }))} />
+            onVerified={() => { if (!SUPABASE_CONFIGURED) setVerified((v) => ({ ...v, phone: true })); /* prod: SMS OTP not wired; server-controlled */ }} />
 
         )}
 
         {verifySheet === "id" && (
-
-          <IdVerifySheet onClose={() => setVerifySheet(null)}
-
-            onVerified={() => setVerified((v) => ({ ...v, id: true }))} />
-
+          SUPABASE_CONFIGURED ? (
+            <VerificationRequestSheet lang={lang} kind="identity" onClose={() => {
+              setVerifySheet(null);
+              getMyVerifications().then((rows) => { const r = rows.filter((x) => x.kind === "identity").sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]; setVerifyStatus((s) => ({ ...s, id: r?.status || "not_requested" })); if (r?.status === "approved") setVerified((v) => ({ ...v, id: true })); }).catch(() => {});
+            }} />
+          ) : (
+            <IdVerifySheet onClose={() => setVerifySheet(null)}
+              onVerified={() => setVerified((v) => ({ ...v, id: true }))} />
+          )
         )}
 
         {verifySheet === "skill" && (

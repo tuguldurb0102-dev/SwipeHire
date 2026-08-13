@@ -23,7 +23,10 @@ export default function VerificationRequestSheet({ lang = "mn", kind = "company"
     : kind === "identity" ? L("Иргэний үнэмлэх баталгаажуулах", "Verify identity")
     : L("Утас баталгаажуулах", "Verify phone");
 
+  const hasPending = rows.some((r) => r.status === "pending" || r.status === "under_review");
+
   const submit = async () => {
+    if (hasPending) { setError(L("Хүсэлт аль хэдийн хүлээгдэж байна.", "A request is already pending.")); return; }
     setBusy(true); setError(null);
     try {
       await submitVerification({ kind, file });
@@ -58,7 +61,13 @@ export default function VerificationRequestSheet({ lang = "mn", kind = "company"
 
         {error && <div style={{ color: "#ff8a8a", fontSize: 13, marginBottom: 12 }}>{error}</div>}
 
-        <button onClick={submit} disabled={busy} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#FF6B35,#E85400)", color: "#fff", fontWeight: 800, fontSize: 16, cursor: busy ? "not-allowed" : "pointer", opacity: busy ? 0.6 : 1 }}>
+        {hasPending && (
+          <div style={{ fontSize: 12.5, color: "#FFD23F", background: "rgba(255,210,63,0.08)", border: "1px solid rgba(255,210,63,0.3)", borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+            {L("Баталгаажуулалт хүлээгдэж байна. Манай баг хянаж байна.", "Verification pending. Our team is reviewing it.")}
+          </div>
+        )}
+
+        <button onClick={submit} disabled={busy || hasPending} style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#FF6B35,#E85400)", color: "#fff", fontWeight: 800, fontSize: 16, cursor: (busy || hasPending) ? "not-allowed" : "pointer", opacity: (busy || hasPending) ? 0.6 : 1 }}>
           {busy ? L("Илгээж байна…", "Submitting…") : L("Хүсэлт илгээх", "Submit request")}
         </button>
 

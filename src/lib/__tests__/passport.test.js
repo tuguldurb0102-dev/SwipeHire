@@ -49,6 +49,23 @@ describe("computePassportScore", () => {
   });
 });
 
+describe("verification affects score only when approved (trusted state)", () => {
+  it("pending/unverified identity awards NO verification points", () => {
+    // pending or not_requested => verified.id is false in the derived state
+    const r = computePassportScore({ verified: { id: false }, skills: ["a"] });
+    expect(r.breakdown.find((b) => b.labelEn === "Verification").val).toBe(0);
+  });
+  it("approved identity awards exactly 10 verification points", () => {
+    const r = computePassportScore({ verified: { id: true } });
+    expect(r.breakdown.find((b) => b.labelEn === "Verification").val).toBe(10);
+  });
+  it("uploading a document alone (no approval) does not raise the score", () => {
+    // The score never reads a document path — only the boolean verified state.
+    const withDocPending = computePassportScore({ cv_path: "x/y.pdf", verified: { id: false } });
+    expect(withDocPending.total).toBe(0);
+  });
+});
+
 describe("verifiedSignals", () => {
   it("reports the three attestable signals", () => {
     const s = verifiedSignals({ verified: { phone: true, id: false, skill: true } });
