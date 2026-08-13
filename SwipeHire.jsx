@@ -23,6 +23,7 @@ import ChatPanel from "./src/components/chat/ChatPanel.jsx";
 import ApplicantsPanel from "./src/components/employer/ApplicantsPanel.jsx";
 import NotificationBell from "./src/components/notifications/NotificationBell.jsx";
 import MyJobsPanel from "./src/components/employer/MyJobsPanel.jsx";
+import VerificationRequestSheet from "./src/components/verification/VerificationRequestSheet.jsx";
 
 import {
 
@@ -12801,6 +12802,7 @@ export default function App() {
   const [showChat, setShowChat] = useState(false);
   const [showApplicants, setShowApplicants] = useState(false);
   const [showMyJobs, setShowMyJobs] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
 
   useEffect(() => {
     if (!AUTH_ENABLED) return;
@@ -13876,6 +13878,15 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
         <PostJobSheet lang={lang} companyId={companyId}
           onClose={() => setShowPostJob(false)}
           onPosted={() => {}} />
+      )}
+
+      {/* Phase 2: request company verification (employer, when unverified) */}
+      {AUTH_ENABLED && role === "employer" && !empVerified && (
+        <button onClick={() => setShowVerify(true)} aria-label="Verify company"
+          style={{ position: "fixed", right: 18, bottom: 344, zIndex: 60, width: 56, height: 56, borderRadius: "50%", border: "none", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", color: "#fff", fontSize: 22, cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.4)" }}>🛡️</button>
+      )}
+      {showVerify && AUTH_ENABLED && (
+        <VerificationRequestSheet lang={lang} kind="company" onClose={() => setShowVerify(false)} />
       )}
 
       {/* Phase 1 STEP 5: my jobs (employer) */}
