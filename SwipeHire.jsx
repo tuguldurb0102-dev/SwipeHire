@@ -20,6 +20,7 @@ import AuthGate from "./src/components/auth/AuthGate.jsx";
 import PostJobSheet from "./src/components/employer/PostJobSheet.jsx";
 import ChatPanel from "./src/components/chat/ChatPanel.jsx";
 import ApplicantsPanel from "./src/components/employer/ApplicantsPanel.jsx";
+import NotificationBell from "./src/components/notifications/NotificationBell.jsx";
 
 import {
 
@@ -8580,6 +8581,8 @@ function SeekerDashboard({ onSwitchRole, flash, onRegister, onGoHome, onLogout }
 
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 
+          {SUPABASE_CONFIGURED && <span style={{ marginRight: 6, display: "inline-flex" }}><NotificationBell lang={lang} /></span>}
+
           <button onClick={toggleTheme} aria-label="Theme" style={{
             width: 26, height: 26, borderRadius: 8, border: "1px solid var(--hair-2)",
             background: "var(--surface)", cursor: "pointer", fontSize: 12, marginRight: 6,
@@ -13565,6 +13568,8 @@ ${c.salary ? `<h2>${lang === "en" ? "Expected Salary" : "Хүсэж буй ца�
         {/* Right: actions */}
 
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+
+          {AUTH_ENABLED && <NotificationBell lang={lang} />}
 
           <button onClick={toggleTheme} aria-label="Theme" style={{
             width: 34, height: 34, borderRadius: 8, border: "1px solid var(--hair-2)",
