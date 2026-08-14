@@ -4370,7 +4370,9 @@ const SKILL_QUESTIONS = {
 
 function SkillVerifySheet({ category, onClose, onVerified }) {
 
-  const qs = SKILL_QUESTIONS[category] || SKILL_QUESTIONS.default;
+  // Only professions with a dedicated question bank get a real test. For any
+  // other profession we show "coming soon" instead of mismatched questions.
+  const qs = SKILL_QUESTIONS[category] || null;
 
   const [idx, setIdx] = useState(0);
 
@@ -4379,6 +4381,19 @@ function SkillVerifySheet({ category, onClose, onVerified }) {
   const [answers, setAnswers] = useState([]);
 
   const [stage, setStage] = useState("quiz"); // "quiz" | "result"
+
+  if (!qs) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 200, background: "rgba(0,0,0,0.82)", backdropFilter: "blur(10px)", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", padding: 28, textAlign: "center" }}>
+        <div style={{ fontSize: 46, marginBottom: 14 }}>🧩</div>
+        <div style={{ fontSize: 19, fontWeight: 900, color: "var(--ink)", marginBottom: 8, fontFamily: "'Barlow Condensed',sans-serif" }}>Ур чадварын тест удахгүй</div>
+        <div style={{ fontSize: 14, color: "var(--dim)", lineHeight: 1.6, maxWidth: 320 }}>
+          <b style={{ color: "var(--ink)" }}>{category}</b> мэргэжлийн ур чадварын тест хараахан бэлэн болоогүй байна. Одоогоор гагнуурчин, цахилгаанчин зэрэг мэргэжлүүдэд боломжтой.
+        </div>
+        <button onClick={onClose} style={{ marginTop: 22, padding: "12px 32px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#FF6B35,#E85400)", color: "#fff", fontWeight: 800, fontSize: 15, cursor: "pointer" }}>Хаах</button>
+      </div>
+    );
+  }
 
 
 
