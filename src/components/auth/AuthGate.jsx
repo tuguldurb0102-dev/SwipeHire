@@ -74,7 +74,7 @@ export default function AuthGate({ lang = "mn", theme = "dark", onToggleTheme })
         }}>{theme === "dark" ? "☀️" : "🌙"}</button>
       )}
       <div style={{ textAlign: "center", marginBottom: 24 }}>
-        <div style={{ width: 56, height: 56, borderRadius: 16, background: "linear-gradient(135deg,#FF6B35,#E85400)", display: "grid", placeItems: "center", margin: "0 auto 14px", fontSize: 28 }}>🎯</div>
+        <img src="/logo.png" alt="SwipeHire" style={{ width: 64, height: 64, borderRadius: 16, margin: "0 auto 14px", display: "block", objectFit: "contain" }} />
         <div style={{ fontSize: 26, fontWeight: 900, color: "var(--ink,#f6f4ef)", fontFamily: "'Barlow Condensed',sans-serif" }}>SwipeHire</div>
         <div style={{ fontSize: 13, color: "var(--dim,#9a968d)", marginTop: 4 }}>
           {mode === "signup" ? L("Шинэ бүртгэл үүсгэх", "Create your account")
