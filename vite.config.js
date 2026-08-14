@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { resolve } from 'path'
 
 export default defineConfig({
   plugins: [react()],
@@ -12,5 +13,13 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
+    rollupOptions: {
+      input: {
+        // The mobile app (Capacitor + web demo) — unchanged.
+        main: resolve(__dirname, 'index.html'),
+        // The desktop employer website — shares src/services + Supabase.
+        employer: resolve(__dirname, 'employer.html'),
+      },
+    },
   },
 })
