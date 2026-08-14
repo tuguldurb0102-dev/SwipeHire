@@ -1,0 +1,22 @@
+# Netlify deployment config for the SwipeHire web app.
+#
+# Build the Vite app to dist/ and serve it as a single-page app. Supabase
+# credentials are provided as environment variables in the Netlify UI (Site
+# settings → Environment variables), NOT committed here:
+#   VITE_SUPABASE_URL       = https://<project-ref>.supabase.co
+#   VITE_SUPABASE_ANON_KEY   = sb_publishable_...   (public client key — safe)
+# When both are set at build time, the app runs in real mode (AuthGate login);
+# without them it falls back to demo mode.
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Single-page app: serve index.html for any path so deep links / refreshes work.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
